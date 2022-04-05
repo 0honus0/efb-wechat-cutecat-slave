@@ -44,9 +44,9 @@ class MsgProcessor:
     
     @classmethod
     def location_msg(cls , msg: dict , api_root : str):
-        return msg
+        return efb_location_wrapper(msg['msg'])
     
-        @classmethod
+    @classmethod
     def location_msg(self , msg: dict , api_root : str):
         pass
 
