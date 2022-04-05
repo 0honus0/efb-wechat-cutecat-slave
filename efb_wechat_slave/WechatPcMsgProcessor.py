@@ -1,7 +1,7 @@
 import base64
 import tempfile
 from .utils import download_file
-from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper
+from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper
 
 
 class MsgProcessor:
@@ -39,5 +39,5 @@ class MsgProcessor:
 
     
     @classmethod
-    def msgType49_xml_msg(cls , msg: dict , api_root : str):
-        return efb_msgType49_xml_wrapper(msg['content'])
+    def share_link_msg(cls , msg: dict , api_root : str):
+        return efb_share_link_wrapper(msg['content'])
