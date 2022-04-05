@@ -30,7 +30,8 @@ from .utils import process_quote_text, download_file
 
 TYPE_HANDLERS = {
     'text' : MsgProcessor.text_msg,
-    'image' : MsgProcessor.image_msg
+    'image' : MsgProcessor.image_msg,
+    'video' : MsgProcessor.video_msg
 }
 
 import sys
@@ -84,7 +85,7 @@ class CuteCatChannel(SlaveChannel):
 
         @self.bot.on('EventGroupMsg')
         def on_group_msg(msg: Dict[str, Any]):
-            self.logger.debug(msg)
+            print(msg)
 
             group_wxid = msg['from_wxid']
             group_name = msg['from_name']
@@ -106,12 +107,12 @@ class CuteCatChannel(SlaveChannel):
             ))
 
             if msg['type'] in TYPE_HANDLERS:
-                if msg['type'] == 'text':
-                    efb_msg = TYPE_HANDLERS[msg['type']](msg)
-                if msg['type'] == 'image':
+                if msg['type'] == 'image' or msg['type'] == 'video':
                     efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
-            if 'efb_msg' not in dir():
-                efb_msg = efb_text_simple_wrapper(msg['msg'])
+                else:
+                    efb_msg = TYPE_HANDLERS['text'](msg)
+            else:
+                 efb_msg = TYPE_HANDLERS['text'](msg)
             efb_msg.author = author
             efb_msg.chat = chat
             efb_msg.deliver_to = coordinator.master
@@ -119,7 +120,7 @@ class CuteCatChannel(SlaveChannel):
         
         @self.bot.on('EventFriendMsg')
         def on_friend_msg(msg: Dict[str, Any]):
-            self.logger.debug(msg)
+            print(msg)
 
             name = msg['final_from_name']
             wxid = msg['final_from_wxid']
@@ -135,12 +136,12 @@ class CuteCatChannel(SlaveChannel):
             #     efb_msg = TYPE_HANDLERS[msg['msgType']](msg)
 
             if msg['type'] in TYPE_HANDLERS:
-                if msg['type'] == 'text':
-                    efb_msg = TYPE_HANDLERS[msg['type']](msg)
-                if msg['type'] == 'image':
+                if msg['type'] == 'image' or msg['type'] == 'video':
                     efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
-            if 'efb_msg' not in dir():
-                efb_msg = efb_text_simple_wrapper(msg)
+                else:
+                    efb_msg = TYPE_HANDLERS['text'](msg)
+            else:
+                 efb_msg = TYPE_HANDLERS['text'](msg)
             efb_msg.author = author
             efb_msg.chat = chat
             efb_msg.deliver_to = coordinator.master
