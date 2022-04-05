@@ -43,7 +43,7 @@ class MsgProcessor:
         return efb_share_link_wrapper(msg['msg'])
     
     @classmethod
-    def location_msg(self , msg: str , api_root : str):
+    def location_msg(self , msg: str):
         return efb_location_wrapper(msg['msg'])
     
     @classmethod
