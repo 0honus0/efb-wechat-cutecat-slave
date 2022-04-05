@@ -27,4 +27,4 @@ api_root 为运行可爱猫的ip + iHttp 插件的 port
 
 robot_wxid 为作为机器人的微信id
 
-access_token 鉴权使用，可在iHttp路径下配置文件中找到
+access_token 鉴权使用，可在iHttp路径下配置文件中找到，如果开启则需要设置，否则不需要
