@@ -29,8 +29,8 @@ from .WechatPcMsgProcessor import MsgProcessor
 from .utils import process_quote_text, download_file
 
 TYPE_HANDLERS = {
-    1: MsgProcessor.text_msg,
-    3: MsgProcessor.image_msg
+    'text' : MsgProcessor.text_msg,
+    'image' : MsgProcessor.image_msg
 }
 
 import sys
@@ -44,9 +44,7 @@ class CuteCatChannel(SlaveChannel):
 
     # info_list = TTLCache(maxsize=2, ttl=600)
     # info_dict = TTLCache(maxsize=2, ttl=600)
-
     # info_list = TTLCache(maxsize=2, ttl=600)
-
     # info_dict = TTLCache(maxsize=2, ttl=600)
 
     info_list = {}
@@ -61,8 +59,9 @@ class CuteCatChannel(SlaveChannel):
 
     __version__ = version.__version__
 
-    logger: logging.Logger = logging.getLogger(
-        "plugins.%s.CuteCatiHttp" % channel_id)
+    logger: logging.Logger = logging.getLogger("plugins.%s.CuteCatiHttp" % channel_id)
+
+    logger.setLevel(logging.DEBUG)
 
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image,
                                 MsgType.Link, MsgType.Voice, MsgType.Animation}
@@ -75,17 +74,17 @@ class CuteCatChannel(SlaveChannel):
             raise EFBException("api_root not found in config")
         if 'robot_wxid' not in self.config:
             raise EFBException("robot_wxid not found in config")
-        api_root = self.config['api_root']
+        self.api_root = self.config['api_root']
         robot_wxid = self.config['robot_wxid']
         access_token = self.config.get('access_token',None)
 
-        self.bot = CuteCat(api_root = api_root, robot_wxid = robot_wxid, access_token = access_token)
+        self.bot = CuteCat(api_root = self.api_root, robot_wxid = robot_wxid, access_token = access_token)
 
         ChatMgr.slave_channel = self
 
         @self.bot.on('EventGroupMsg')
         def on_group_msg(msg: Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
 
             group_wxid = msg['from_wxid']
             group_name = msg['from_name']
@@ -106,7 +105,13 @@ class CuteCatChannel(SlaveChannel):
                     uid=userwxid
             ))
 
-            efb_msg = efb_text_simple_wrapper(str(msg['msg']))
+            if msg['type'] in TYPE_HANDLERS:
+                if msg['type'] == 'text':
+                    efb_msg = TYPE_HANDLERS[msg['type']](msg)
+                if msg['type'] == 'image':
+                    efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+            if 'efb_msg' not in dir():
+                efb_msg = efb_text_simple_wrapper(msg['msg'])
             efb_msg.author = author
             efb_msg.chat = chat
             efb_msg.deliver_to = coordinator.master
@@ -114,7 +119,7 @@ class CuteCatChannel(SlaveChannel):
         
         @self.bot.on('EventFriendMsg')
         def on_friend_msg(msg: Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
 
             name = msg['final_from_name']
             wxid = msg['final_from_wxid']
@@ -129,8 +134,13 @@ class CuteCatChannel(SlaveChannel):
             # if 'type' in msg and msg['msgType'] in TYPE_HANDLERS:
             #     efb_msg = TYPE_HANDLERS[msg['msgType']](msg)
 
-            efb_msg = efb_text_simple_wrapper(str(msg['msg']))
-
+            if msg['type'] in TYPE_HANDLERS:
+                if msg['type'] == 'text':
+                    efb_msg = TYPE_HANDLERS[msg['type']](msg)
+                if msg['type'] == 'image':
+                    efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+            if 'efb_msg' not in dir():
+                efb_msg = efb_text_simple_wrapper(msg)
             efb_msg.author = author
             efb_msg.chat = chat
             efb_msg.deliver_to = coordinator.master
@@ -207,7 +217,6 @@ class CuteCatChannel(SlaveChannel):
             self.get_all_info()
             self.process_friend_info()
             self.process_group_info()
-        print(self.info_dict['friend'])
 
 #获取全部好友信息
     def get_all_info(self):

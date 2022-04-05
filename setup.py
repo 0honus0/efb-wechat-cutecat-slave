@@ -24,7 +24,6 @@ setup(
     install_requires=[
         "python-CuteCat-iHttp",
         "ehforwarderbot",
-        "pyqrcode",
         "PyYaml>=5.3",
         "cachetools",
         "requests",
