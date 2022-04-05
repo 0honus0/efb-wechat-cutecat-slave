@@ -127,7 +127,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                     )
                     '''
                     efb_msg = Message(
-                        attributes=attribute,
+                        '''attributes=attribute,'''
                         type=MsgType.Link,
                         text=result_text,
                         vendor_specific={ "is_mp": True }
