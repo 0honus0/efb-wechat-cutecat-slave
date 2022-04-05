@@ -182,3 +182,13 @@ def efb_msgType49_xml_wrapper(text: str) -> Tuple[Message]:
         efb_msgs.append(efb_msg)
 
     return tuple(efb_msgs)
+
+
+
+def efb_location_wrapper(self, text: str) -> Message:
+    efb_msg = Message()
+    efb_msg.text = text.text.split('\n')[0][:-1]
+    efb_msg.attributes = LocationAttribute(latitude=float(text.location['x']),
+                                           longitude=float(text.location['y']))
+    efb_msg.type = MsgType.Location
+    return efb_msg
