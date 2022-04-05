@@ -5,7 +5,7 @@ from traceback import print_exc
 
 from ehforwarderbot import MsgType, Chat
 from ehforwarderbot.chat import ChatMember
-from ehforwarderbot.message import Substitutions, Message
+from ehforwarderbot.message import Substitutions, Message, LinkAttribute
 
 
 def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union[Chat, ChatMember]], None] = None) -> Message:
