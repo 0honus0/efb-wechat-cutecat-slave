@@ -38,6 +38,6 @@ class MsgProcessor:
         return api_root + path
 
     
-    @staticmethod
-    def msgType49_xml_msg(msg: dict):
+    @classmethod
+    def msgType49_xml_msg(cls , msg: dict , api_root : str):
         return efb_msgType49_xml_wrapper(msg['content'])
