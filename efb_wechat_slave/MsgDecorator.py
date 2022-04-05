@@ -1,5 +1,7 @@
 from typing import Mapping, Tuple, Union, IO
 import magic
+from lxml import etree
+from traceback import print_exc
 
 from ehforwarderbot import MsgType, Chat
 from ehforwarderbot.chat import ChatMember
