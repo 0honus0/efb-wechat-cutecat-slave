@@ -187,7 +187,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
 
 
 
-def efb_location_wrapper(self, msg: dict) -> Message:
+def efb_location_wrapper(self, msg: dict, text: str) -> Message:
     efb_msg = Message()
     efb_msg.text = msg['Location']
     efb_msg.attributes = LocationAttribute(latitude=float(msg['x']),
