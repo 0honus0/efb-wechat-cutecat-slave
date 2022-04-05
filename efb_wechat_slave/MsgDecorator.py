@@ -80,7 +80,7 @@ def efb_video_wrapper(file: IO, filename: str = None, text: str = None) -> Messa
         efb_msg.text = text
     return efb_msg
 
-def efb_msgType49_xml_wrapper(text: str) -> Tuple[Message]:
+def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     """
     处理msgType49消息 - 复合xml, xml 中 //appmsg/type 指示具体消息类型.
     /msg/appmsg/type
