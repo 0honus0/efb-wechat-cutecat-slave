@@ -33,7 +33,8 @@ TYPE_HANDLERS = {
     'image' : MsgProcessor.image_msg,
     'video' : MsgProcessor.video_msg,
     'share' : MsgProcessor.share_link_msg,
-    'location' : MsgProcessor.location_msg
+    'location' : MsgProcessor.location_msg,
+    'multivoip' : MsgProcessor.multivoip_msg
 }
 
 import sys
@@ -109,7 +110,7 @@ class CuteCatChannel(SlaveChannel):
             ))
 
             if msg['type'] in TYPE_HANDLERS:
-                if msg['type'] in ['video', 'image', 'share', 'location']:
+                if msg['type'] in ['video', 'image', 'share', 'location', 'multivoip']:
                     efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
                 else:
                     efb_msg = TYPE_HANDLERS['text'](msg)
@@ -138,7 +139,7 @@ class CuteCatChannel(SlaveChannel):
             #     efb_msg = TYPE_HANDLERS[msg['msgType']](msg)
 
             if msg['type'] in TYPE_HANDLERS:
-                if msg['type'] in ['video', 'image', 'share', 'location']:
+                if msg['type'] in ['video', 'image', 'share', 'location', 'multivoip']:
                     efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
                 else:
                     efb_msg = TYPE_HANDLERS['text'](msg)
