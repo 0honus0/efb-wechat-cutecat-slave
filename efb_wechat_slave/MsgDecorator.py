@@ -171,8 +171,6 @@ def efb_msgType49_xml_wrapper(text: str) -> Tuple[Message]:
                 vendor_specific={ "is_refer": True }
             )
             efb_msgs.append(efb_msg)
-        elif type == 10002: # 群语音消息类型
-            pass
     except Exception as e:
         print_exc()
 
