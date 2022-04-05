@@ -118,16 +118,14 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 except Exception as e:
                     print_exc()
                 if title is not None and url is not None:
-                    '''
                     attribute = LinkAttribute(
                         title=title,
                         description=des,
                         url=url,
                         image=thumburl
                     )
-                    '''
                     efb_msg = Message(
-                        '''attributes=attribute,'''
+                        attributes=attribute,
                         type=MsgType.Link,
                         text=result_text,
                         vendor_specific={ "is_mp": True }
