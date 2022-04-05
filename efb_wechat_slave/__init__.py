@@ -110,16 +110,25 @@ class CuteCatChannel(SlaveChannel):
             ))
 
             if msg['type'] in TYPE_HANDLERS:
-                if msg['type'] in ['video', 'image', 'share', 'location', 'multivoip']:
+                if msg['type']=='share':
+                    efb_msgs = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+                    for efb_msg in efb_msgs:
+                        efb_msg.author = author
+                        efb_msg.chat = chat
+                        efb_msg.deliver_to = coordinator.master
+                        coordinator.send_message(efb_msg)
+                else msg['type'] in ['video', 'image', 'location', 'multivoip']:
                     efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
-                else:
-                    efb_msg = TYPE_HANDLERS['text'](msg)
+                    efb_msg.author = author
+                    efb_msg.chat = chat
+                    efb_msg.deliver_to = coordinator.master
+                    coordinator.send_message(efb_msg)
             else:
-                 efb_msg = TYPE_HANDLERS['text'](msg)
-            efb_msg.author = author
-            efb_msg.chat = chat
-            efb_msg.deliver_to = coordinator.master
-            coordinator.send_message(efb_msg)
+                efb_msg = TYPE_HANDLERS['text'](msg)
+                efb_msg.author = author
+                efb_msg.chat = chat
+                efb_msg.deliver_to = coordinator.master
+                coordinator.send_message(efb_msg)
         
         @self.bot.on('EventFriendMsg')
         def on_friend_msg(msg: Dict[str, Any]):
@@ -139,16 +148,25 @@ class CuteCatChannel(SlaveChannel):
             #     efb_msg = TYPE_HANDLERS[msg['msgType']](msg)
 
             if msg['type'] in TYPE_HANDLERS:
-                if msg['type'] in ['video', 'image', 'share', 'location', 'multivoip']:
+                if msg['type']=='share':
+                    efb_msgs = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+                    for efb_msg in efb_msgs:
+                        efb_msg.author = author
+                        efb_msg.chat = chat
+                        efb_msg.deliver_to = coordinator.master
+                        coordinator.send_message(efb_msg)
+                else msg['type'] in ['video', 'image', 'location', 'multivoip']:
                     efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
-                else:
-                    efb_msg = TYPE_HANDLERS['text'](msg)
+                    efb_msg.author = author
+                    efb_msg.chat = chat
+                    efb_msg.deliver_to = coordinator.master
+                    coordinator.send_message(efb_msg)
             else:
-                 efb_msg = TYPE_HANDLERS['text'](msg)
-            efb_msg.author = author
-            efb_msg.chat = chat
-            efb_msg.deliver_to = coordinator.master
-            coordinator.send_message(efb_msg)
+                efb_msg = TYPE_HANDLERS['text'](msg)
+                efb_msg.author = author
+                efb_msg.chat = chat
+                efb_msg.deliver_to = coordinator.master
+                coordinator.send_message(efb_msg)
 
 #从本地读取配置
     def load_config(self):
