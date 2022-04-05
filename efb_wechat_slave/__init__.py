@@ -109,20 +109,20 @@ class CuteCatChannel(SlaveChannel):
                     uid=userwxid
             ))
 
-            if msg['type'] in TYPE_HANDLERS:
-                if msg['type']=='share':
-                    efb_msgs = TYPE_HANDLERS[msg['type']](msg , self.api_root)
-                    for efb_msg in efb_msgs:
-                        efb_msg.author = author
-                        efb_msg.chat = chat
-                        efb_msg.deliver_to = coordinator.master
-                        coordinator.send_message(efb_msg)
-                else msg['type'] in ['video', 'image', 'location', 'multivoip']:
-                    efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+
+            if msg['type']=='share':
+                efb_msgs = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+                for efb_msg in efb_msgs:
                     efb_msg.author = author
                     efb_msg.chat = chat
                     efb_msg.deliver_to = coordinator.master
                     coordinator.send_message(efb_msg)
+            elif msg['type'] in ['video', 'image', 'location', 'multivoip']:
+                efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+                efb_msg.author = author
+                efb_msg.chat = chat
+                efb_msg.deliver_to = coordinator.master
+                coordinator.send_message(efb_msg)
             else:
                 efb_msg = TYPE_HANDLERS['text'](msg)
                 efb_msg.author = author
@@ -147,20 +147,19 @@ class CuteCatChannel(SlaveChannel):
             # if 'type' in msg and msg['msgType'] in TYPE_HANDLERS:
             #     efb_msg = TYPE_HANDLERS[msg['msgType']](msg)
 
-            if msg['type'] in TYPE_HANDLERS:
-                if msg['type']=='share':
-                    efb_msgs = TYPE_HANDLERS[msg['type']](msg , self.api_root)
-                    for efb_msg in efb_msgs:
-                        efb_msg.author = author
-                        efb_msg.chat = chat
-                        efb_msg.deliver_to = coordinator.master
-                        coordinator.send_message(efb_msg)
-                else msg['type'] in ['video', 'image', 'location', 'multivoip']:
-                    efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+            if msg['type']=='share':
+                efb_msgs = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+                for efb_msg in efb_msgs:
                     efb_msg.author = author
                     efb_msg.chat = chat
                     efb_msg.deliver_to = coordinator.master
                     coordinator.send_message(efb_msg)
+            elif msg['type'] in ['video', 'image', 'location', 'multivoip']:
+                efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
+                efb_msg.author = author
+                efb_msg.chat = chat
+                efb_msg.deliver_to = coordinator.master
+                coordinator.send_message(efb_msg)
             else:
                 efb_msg = TYPE_HANDLERS['text'](msg)
                 efb_msg.author = author
