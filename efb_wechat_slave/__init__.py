@@ -31,7 +31,8 @@ from .utils import process_quote_text, download_file
 TYPE_HANDLERS = {
     'text' : MsgProcessor.text_msg,
     'image' : MsgProcessor.image_msg,
-    'video' : MsgProcessor.video_msg
+    'video' : MsgProcessor.video_msg,
+    'share' : MsgProcessor.msgType49_xml_msg
 }
 
 import sys
@@ -107,7 +108,7 @@ class CuteCatChannel(SlaveChannel):
             ))
 
             if msg['type'] in TYPE_HANDLERS:
-                if msg['type'] == 'image' or msg['type'] == 'video':
+                if msg['type'] in ['video', 'image', 'share']:
                     efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
                 else:
                     efb_msg = TYPE_HANDLERS['text'](msg)
@@ -136,7 +137,7 @@ class CuteCatChannel(SlaveChannel):
             #     efb_msg = TYPE_HANDLERS[msg['msgType']](msg)
 
             if msg['type'] in TYPE_HANDLERS:
-                if msg['type'] == 'image' or msg['type'] == 'video':
+                if msg['type'] in ['video', 'image', 'share']:
                     efb_msg = TYPE_HANDLERS[msg['type']](msg , self.api_root)
                 else:
                     efb_msg = TYPE_HANDLERS['text'](msg)
