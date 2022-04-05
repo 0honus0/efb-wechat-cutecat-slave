@@ -36,3 +36,8 @@ class MsgProcessor:
         if '\\WeChat' in path:
             path = '/WeChat'+ path.split('\\WeChat')[-1].replace('\\', '/')
         return api_root + path
+
+    
+    @staticmethod
+    def msgType49_xml_msg(msg: dict):
+        return efb_msgType49_xml_wrapper(msg['content'])
