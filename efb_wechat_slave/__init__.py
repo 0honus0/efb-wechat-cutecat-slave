@@ -32,7 +32,7 @@ TYPE_HANDLERS = {
     'text' : MsgProcessor.text_msg,
     'image' : MsgProcessor.image_msg,
     'video' : MsgProcessor.video_msg,
-    'share' : MsgProcessor.msgType49_xml_msg
+    'share' : MsgProcessor.share_link_msg
 }
 
 import sys
