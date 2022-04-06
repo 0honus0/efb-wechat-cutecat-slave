@@ -19,7 +19,6 @@ def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union
     if "[@at," in text:
         at = re.findall(r"\[@at,(.+?)\]",text)
         content = re.findall(r"^.*\] (.+?)$",text, re.S)
-        reg = re.findall('^nickname=(.+),wxid")
         msg = ""
         for each_peopole in at:
             nickname = re.findall("^nickname=(.+),wxid",each_people)
