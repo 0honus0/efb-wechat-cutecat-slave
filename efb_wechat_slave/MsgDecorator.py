@@ -159,7 +159,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                         )
                         efb_msgs.append(efb_msg)
         elif type == 19: # 合并转发的聊天记录
-            msg_title = xml.xpath('/msg/appmsg/title/CDATA/text()')[0]
+            msg_title = xml.xpath('/msg/appmsg/title/text()')[0]
             forward_content = xml.xpath('/msg/appmsg/des/text()')[0]
             result_text += f"{forward_content}\n\n{msg_title}"
             efb_msg = Message(
@@ -176,7 +176,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             efb_msg = Message(
                 type=MsgType.Text,
                 text=result_text,
-                vendor_specific={ "is_forwarded": True }
+                vendor_specific={ "is_wechatsport": True }
             )
             efb_msgs.append(efb_msg)
         elif type == 57: # 引用（回复）消息
