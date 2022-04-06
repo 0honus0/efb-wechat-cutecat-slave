@@ -20,7 +20,7 @@ def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union
         at = re.findall(r"\[@at,(.+?)\]",text)
         content = re.findall(r"^.*\] (.+?)$",text, re.S)
         msg = ""
-        for each_peopole in at:
+        for each_people in at:
             nickname = re.findall("^nickname=(.+),wxid",each_people)
             wxid = re.findall("wxid=(.+)$",each_people)
             if len(nickname)!=0:
