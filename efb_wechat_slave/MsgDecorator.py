@@ -82,6 +82,32 @@ def efb_video_wrapper(file: IO, filename: str = None, text: str = None) -> Messa
         efb_msg.text = text
     return efb_msg
 
+def efb_file_wrapper(file: IO, filename: str = None, text: str = None) -> Message:
+    """
+    A EFB message wrapper for voices.
+    :param file: The file handle
+    :param filename: The actual filename
+    :param text: The attached text
+    :return: EFB Message
+    """
+    efb_msg = Message()
+    efb_msg.type = MsgType.File
+    efb_msg.file = file
+    mime = magic.from_file(file.name, mime=True)
+    if isinstance(mime, bytes):
+        mime = mime.decode()
+    if filename:
+        efb_msg.filename = filename
+    else:
+        efb_msg.filename = file.name
+        efb_msg.filename += '.' + str(mime).split('/')[1]  # Add extension suffix
+    efb_msg.path = efb_msg.file.name
+    efb_msg.mime = mime
+    if text:
+        efb_msg.text = text
+    return efb_msg
+
+
 def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     """
     处理msgType49消息 - 复合xml, xml 中 //appmsg/type 指示具体消息类型.
