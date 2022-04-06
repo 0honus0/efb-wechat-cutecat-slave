@@ -1,7 +1,7 @@
 import base64
 import tempfile
 from .utils import download_file
-from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper
+from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper
 
 
 class MsgProcessor:
@@ -36,3 +36,17 @@ class MsgProcessor:
         if '\\WeChat' in path:
             path = '/WeChat'+ path.split('\\WeChat')[-1].replace('\\', '/')
         return api_root + path
+
+    
+    @classmethod
+    def share_link_msg(self , msg: dict , api_root : str):
+        return efb_share_link_wrapper(msg['msg'])
+    
+    @classmethod
+    def location_msg(self , msg: dict, api_root : str):
+        return efb_location_wrapper(self, msg['msg'])
+    
+    @classmethod
+    def multivoip_msg(self , msg: dict , api_root : str):
+        pass
+
