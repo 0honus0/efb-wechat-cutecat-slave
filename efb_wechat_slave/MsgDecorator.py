@@ -88,9 +88,9 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     /msg/appmsg/type
     已知：
     //appmsg/type = 5 : 链接（公众号文章）
-	//appmsg/type = 17 : 实时位置共享
-	//appmsg/type = 19 : 合并转发的聊天记录
-	//appmsg/type = 21 : 微信运动
+    //appmsg/type = 17 : 实时位置共享
+    //appmsg/type = 19 : 合并转发的聊天记录
+    //appmsg/type = 21 : 微信运动
     //appmsg/type = 74 : 文件 (收到文件的第一个提示)
     //appmsg/type = 6 : 文件 （收到文件的第二个提示【文件下载完成】)，也有可能 msgType = 10000 【【提示文件有风险】没有任何有用标识，无法判断是否与前面哪条消息有关联】
     //appmsg/type = 57 : 【感谢 @honus 提供样本 xml】引用(回复)消息，未细致研究哪个参数是被引用的消息 id 
@@ -159,21 +159,21 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                         )
                         efb_msgs.append(efb_msg)
         elif type == 19: # 合并转发的聊天记录
-			msg_title = xml.xpath('/msg/appmsg/title/CDATA/text()')[0]
-			forward_content = xml.xpath('/msg/appmsg/des/text()')[0]
-			result_text += f"{forward_content}\n\n{msg_title}"
-			efb_msg = Message(
+            msg_title = xml.xpath('/msg/appmsg/title/CDATA/text()')[0]
+            forward_content = xml.xpath('/msg/appmsg/des/text()')[0]
+            result_text += f"{forward_content}\n\n{msg_title}"
+            efb_msg = Message(
                 type=MsgType.Text,
                 text=result_text,
                 vendor_specific={ "is_forwarded": True }
             )
             efb_msgs.append(efb_msg)
-		elif type == 21: # 微信运动
-			msg_title = xml.xpath('/msg/appmsg/title/text()')[0].strip("<![CDATA[夺得").strip("冠军]]>")
-			rank = xml.xpath('/msg/appmsg/hardwareinfo/messagenodeinfo/rankinfo/rank/rankdisplay/text()')[0].strip("<![CDATA[").strip("]]>")
-			steps = xml.xpath('/msg/appmsg/hardwareinfo/messagenodeinfo/rankinfo/score/scoredisplay/text()')[0].strip("<![CDATA[").strip("]]>")
-			result_text += f"{msg_title}\n\n排名：{rank}\n\n步数：{steps}"
-			efb_msg = Message(
+        elif type == 21: # 微信运动
+            msg_title = xml.xpath('/msg/appmsg/title/text()')[0].strip("<![CDATA[夺得").strip("冠军]]>")
+            rank = xml.xpath('/msg/appmsg/hardwareinfo/messagenodeinfo/rankinfo/rank/rankdisplay/text()')[0].strip("<![CDATA[").strip("]]>")
+            steps = xml.xpath('/msg/appmsg/hardwareinfo/messagenodeinfo/rankinfo/score/scoredisplay/text()')[0].strip("<![CDATA[").strip("]]>")
+            result_text += f"{msg_title}\n\n排名：{rank}\n\n步数：{steps}"
+            efb_msg = Message(
                 type=MsgType.Text,
                 text=result_text,
                 vendor_specific={ "is_forwarded": True }
