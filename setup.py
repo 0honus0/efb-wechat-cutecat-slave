@@ -27,7 +27,8 @@ setup(
         "PyYaml>=5.3",
         "cachetools",
         "requests",
-        "python-magic"
+        "python-magic",
+        "lxml"
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
