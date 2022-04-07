@@ -20,6 +20,7 @@
    ```
    api_url: "http://127.0.0.1:8090"
    self_url: "http://127.0.0.1:18888"
+   receive_self_msg: True
    robot_wxid: ""
    access_token: ""
    ```
@@ -27,6 +28,8 @@
 api_url 为运行可爱猫的ip + iHttp 插件的 port
 
 self_url 为运行efb从端的 ip + port
+
+reveice_self_msg True为接收自己发送的消息，默认为False
 
 robot_wxid 为作为机器人的微信id
 
