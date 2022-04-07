@@ -18,12 +18,15 @@
 4. 配置 config.yaml (路径 honus.CuteCatiHttp/config.yaml)
 
    ```
-   api_root: "http://127.0.0.1:8090"
+   api_url: "http://127.0.0.1:8090"
+   self_url: "http://127.0.0.1:18888"
    robot_wxid: ""
    access_token: ""
    ```
 
-api_root 为运行可爱猫的ip + iHttp 插件的 port
+api_url 为运行可爱猫的ip + iHttp 插件的 port
+
+self_url 为运行efb从端的 ip + port
 
 robot_wxid 为作为机器人的微信id
 
