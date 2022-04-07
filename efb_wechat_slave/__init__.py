@@ -87,6 +87,8 @@ class CuteCatChannel(SlaveChannel):
         @self.bot.on('EventSendOutMsg')
         def on_self_msg(msg: Dict[str, Any]):
             print(msg)
+            if not self.config.get('receive_self_msg',False):
+                return
             efb_msgs = []
             if msg['final_from_wxid'] == self.robot_wxid:
                 chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
@@ -95,7 +97,10 @@ class CuteCatChannel(SlaveChannel):
                 ))
                 author = chat.other
 
-                efb_msgs.append(TYPE_HANDLERS['text'](msg))
+                if msg['type'] == 'share':
+                    efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
+                else:
+                    efb_msgs.append(TYPE_HANDLERS['text'](msg))
                 for efb_msg in efb_msgs:
                     efb_msg.author = author
                     efb_msg.chat = chat
@@ -109,8 +114,8 @@ class CuteCatChannel(SlaveChannel):
             group_wxid = msg['from_wxid']
             group_name = msg['from_name']
 
-            username = msg['final_from_name']
-            userwxid = msg['final_from_wxid']
+            userwxid = msg['final_from_wxid'] or group_wxid
+            username = msg['final_from_name'] or group_name
             chat = None
             author = None
             chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
@@ -224,8 +229,10 @@ class CuteCatChannel(SlaveChannel):
         if msg.type in [MsgType.Image , MsgType.Sticker , MsgType.Video , MsgType.File]:
             temp_msg = {'name' : msg.filename , 'url': self.self_url + msg.file.name}
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
-            ret_msg = ("%s Send Success" % msg.type) if data.get('code' , None) == 0 else ("%s Send Failed" % msg.type)
-            self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= ret_msg)  
+            if not self.config.get('receive_self_msg',False):
+                return msg
+            if data.get('code',None) !=0:
+                self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= "%s Send Failed" % msg.type)  
         return msg
 
 #to do
