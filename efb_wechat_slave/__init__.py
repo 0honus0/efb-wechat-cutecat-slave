@@ -65,8 +65,6 @@ class CuteCatChannel(SlaveChannel):
 
     logger: logging.Logger = logging.getLogger("plugins.%s.CuteCatiHttp" % channel_id)
 
-    logger.setLevel(logging.INFO)
-
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image,
                                 MsgType.Link, MsgType.Voice, MsgType.Animation}
 
@@ -74,15 +72,16 @@ class CuteCatChannel(SlaveChannel):
         super().__init__(instance_id)
 
         self.load_config()
-        if 'api_root' not in self.config:
-            raise EFBException("api_root not found in config")
+        if 'api_url' not in self.config:
+            raise EFBException("api_url not found in config")
         if 'robot_wxid' not in self.config:
             raise EFBException("robot_wxid not found in config")
-        self.api_root = self.config['api_root']
+        self.api_url = self.config['api_url']
         self.robot_wxid = self.config['robot_wxid']
+        self.self_url = self.config['self_url']
         access_token = self.config.get('access_token',None)
 
-        self.bot = CuteCat(api_root = self.api_root, robot_wxid = self.robot_wxid, access_token = access_token)
+        self.bot = CuteCat(api_url = self.api_url, robot_wxid = self.robot_wxid, access_token = access_token)
 
         ChatMgr.slave_channel = self
         @self.bot.on('EventSendOutMsg')
@@ -96,7 +95,6 @@ class CuteCatChannel(SlaveChannel):
                 ))
                 author = chat.other
 
-                msg['msg'] = "You Send a %s Message " % msg['type']
                 efb_msgs.append(TYPE_HANDLERS['text'](msg))
                 for efb_msg in efb_msgs:
                     efb_msg.author = author
@@ -217,9 +215,16 @@ class CuteCatChannel(SlaveChannel):
         if msg.edit:
             pass  # todo
 
-        if msg.type in [MsgType.Text]:
-            self.bot.SendTextMsg(to_wxid=chat_uid,msg=msg.text)
-
+        if msg.type in [MsgType.Text , MsgType.Link]:
+            self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
+        if msg.type in [MsgType.Image]:
+            temp_msg = {'name' : msg.filename , 'url': self.self_url + msg.file.name}
+            data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg)
+            ret = data.get('code' , None)
+            if ret == 0:
+                self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= "Image Send Success")  
+            else:
+                self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= "Image Send Success")  
         return msg
 
 #to do
