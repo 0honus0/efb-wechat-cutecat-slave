@@ -32,12 +32,12 @@ def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union
                 msg+="@"+nickname[0]
             else:
                 msg+="@"+wxid[0]
-        if len(content0)!=0:
-            msg+="\n"+content1[0]
         if len(content1)!=0:
+            msg+="\n"+content1[0]
+        if len(content2)!=0:
             for middle in content2:
                 msg+=middle
-        if len(content2)!=0:
+        if len(content3)!=0:
             msg+=content3[0]
     else:
         msg=text
