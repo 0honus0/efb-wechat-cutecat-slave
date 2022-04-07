@@ -224,11 +224,8 @@ class CuteCatChannel(SlaveChannel):
         if msg.type in [MsgType.Image]:
             temp_msg = {'name' : msg.filename , 'url': self.self_url + msg.file.name}
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg)
-            ret = data.get('code' , None)
-            if ret == 0:
-                self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= "Image Send Success")  
-            else:
-                self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= "Image Send Success")  
+            msg = "Image Send Success" if data.get('code' , None) == 0 else "Image Send Failed"
+            self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= msg)  
         return msg
 
 #to do
