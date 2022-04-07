@@ -65,8 +65,8 @@ class CuteCatChannel(SlaveChannel):
 
     logger: logging.Logger = logging.getLogger("plugins.%s.CuteCatiHttp" % channel_id)
 
-    supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image,
-                                MsgType.Link, MsgType.Voice, MsgType.Animation}
+    supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image, MsgType.Video,
+                                MsgType.File, MsgType.Link, MsgType.Voice, MsgType.Animation}
 
     def __init__(self, instance_id: InstanceID = None):
         super().__init__(instance_id)
@@ -221,10 +221,10 @@ class CuteCatChannel(SlaveChannel):
 
         if msg.type in [MsgType.Text , MsgType.Link]:
             self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
-        if msg.type in [MsgType.Image]:
+        if msg.type in [MsgType.Image , MsgType.Sticker , MsgType.Video , MsgType.File]:
             temp_msg = {'name' : msg.filename , 'url': self.self_url + msg.file.name}
-            data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg)
-            ret_msg = "Image Send Success" if data.get('code' , None) == 0 else "Image Send Failed"
+            data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
+            ret_msg = ("%s Send Success" % msg.type) if data.get('code' , None) == 0 else ("%s Send Failed" % msg.type)
             self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= ret_msg)  
         return msg
 
