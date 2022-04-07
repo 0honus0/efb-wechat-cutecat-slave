@@ -230,8 +230,8 @@ class CuteCatChannel(SlaveChannel):
             temp_msg = {'name' : msg.filename , 'url': self.self_url + msg.file.name}
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
             if not self.config.get('receive_self_msg',False):
-                return
-            elif data.get('code',None) !=0:
+                return msg
+            if data.get('code',None) !=0:
                 self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= "%s Send Failed" % msg.type)  
         return msg
 
