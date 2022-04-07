@@ -30,7 +30,7 @@ def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union
                 msg+="@"+nickname[0]
             else:
                 msg+="@"+wxid[0]
-        msg+='\n'+content
+        msg+='\n\n'+content
     else:
         msg=text
         
