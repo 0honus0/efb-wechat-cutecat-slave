@@ -143,6 +143,8 @@ class CuteCatChannel(SlaveChannel):
                 efb_msg.chat = chat
                 efb_msg.deliver_to = coordinator.master
                 coordinator.send_message(efb_msg)
+                if efb_msg.file:
+                    efb_msg.file.close()
         
         @self.bot.on('EventFriendMsg')
         def on_friend_msg(msg: Dict[str, Any]):
@@ -175,6 +177,8 @@ class CuteCatChannel(SlaveChannel):
                 efb_msg.chat = chat
                 efb_msg.deliver_to = coordinator.master
                 coordinator.send_message(efb_msg)
+                if efb_msg.file:
+                    efb_msg.file.close()
 
 #从本地读取配置
     def load_config(self):
