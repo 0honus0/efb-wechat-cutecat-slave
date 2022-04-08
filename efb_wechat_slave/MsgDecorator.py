@@ -1,5 +1,5 @@
 from typing import Mapping, Tuple, Union, IO
-import magic
+import magic, re
 from lxml import etree
 from traceback import print_exc
 
@@ -16,9 +16,28 @@ def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union
                 [[begin_index, end_index], {Chat or ChatMember}]
     :return: EFB Message
     """
+    """
+    add handle @, current doesn't consider @ yourself
+    """
+    if "[@at," in text:
+        at = re.findall(r"\[@at,(.+?)\]",text)
+        content = re.sub(r'\[@at,nickname=(.+?)\]','',text)
+        msg = ""
+        for each_people in at:
+            nickname = re.findall("^nickname=(.+),wxid",each_people)
+            wxid = re.findall("wxid=(.+)$",each_people)
+            if len(nickname)!=0:
+                msg+="@"+nickname[0]
+            else:
+                msg+="@"+wxid[0]
+        msg+='\n\n'+content
+    else:
+        msg=text
+        
+        
     efb_msg = Message(
         type=MsgType.Text,
-        text=text
+        text=msg
     )
     if ats:
         efb_msg.substitutions = Substitutions(ats)
@@ -198,7 +217,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             msg_title = xml.xpath('/msg/appmsg/title/text()')[0].strip("<![CDATA[夺得").strip("冠军]]>")
             rank = xml.xpath('/msg/appmsg/hardwareinfo/messagenodeinfo/rankinfo/rank/rankdisplay/text()')[0].strip("<![CDATA[").strip("]]>")
             steps = xml.xpath('/msg/appmsg/hardwareinfo/messagenodeinfo/rankinfo/score/scoredisplay/text()')[0].strip("<![CDATA[").strip("]]>")
-            result_text += f"{msg_title}\n\n排名：{rank}\n\n步数：{steps}"
+            result_text += f"{msg_title}\n\n排名：{rank}\n步数：{steps}"
             efb_msg = Message(
                 type=MsgType.Text,
                 text=result_text,
