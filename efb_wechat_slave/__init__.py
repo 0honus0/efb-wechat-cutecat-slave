@@ -217,7 +217,10 @@ class CuteCatChannel(SlaveChannel):
         if msg.edit:
             pass  # todo
 
-        filename = msg.file.name.split('/')[-1] if msg.file else msg.file.name
+        try:
+            filename = msg.file.name.split('/')[-1] if msg.file else msg.file.name
+        except:
+            pass
         if msg.type in [MsgType.Text , MsgType.Link]:
             self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
         elif msg.type in [MsgType.Image , MsgType.Sticker]:
