@@ -1,13 +1,9 @@
 import logging
-import queue
 import threading
-import uuid
 from traceback import print_exc
 
 import yaml
-import hashlib
 from ehforwarderbot.chat import PrivateChat
-from pyqrcode import QRCode
 from typing import Optional, Collection, BinaryIO, Dict, Any , Union
 from datetime import datetime
 
@@ -46,20 +42,12 @@ class CuteCatChannel(SlaveChannel):
 
     config: Dict[str, Any] = {}
 
-    # info_list = TTLCache(maxsize=2, ttl=600)
-    # info_dict = TTLCache(maxsize=2, ttl=600)
-    # info_list = TTLCache(maxsize=2, ttl=600)
-    # info_dict = TTLCache(maxsize=2, ttl=600)
+    info_list = TTLCache(maxsize=2, ttl=600)
+    info_dict = TTLCache(maxsize=2, ttl=600)
 
-    info_list = {}
-    info_dict = {}
-
-    info_list['chat'] = []
-    info_dict['chat'] = {}
-    info_dict['friend'] = {}
+    group_member_info = TTLCache(maxsize= 10000 ,ttl=3600)
 
     update_friend_event = threading.Event()
-    update_friend_lock = threading.Lock()
 
     __version__ = version.__version__
 
@@ -89,6 +77,7 @@ class CuteCatChannel(SlaveChannel):
             print(msg)
             if not self.config.get('receive_self_msg',False):
                 return
+
             efb_msgs = []
             if msg['final_from_wxid'] == self.robot_wxid:
                 chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
@@ -116,6 +105,13 @@ class CuteCatChannel(SlaveChannel):
 
             userwxid = msg['final_from_wxid'] or group_wxid
             username = msg['final_from_name'] or group_name
+
+            group_nick_name = None
+            if not self.group_member_info.get(group_wxid , None):
+                self.update_group_member_info(group_wxid)
+            if self.group_member_info[group_wxid].get(userwxid , None):
+                group_nick_name = self.group_member_info[group_wxid][userwxid]
+
             chat = None
             author = None
             chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
@@ -125,9 +121,9 @@ class CuteCatChannel(SlaveChannel):
 
             remark = self.get_friend_info('remark', userwxid)
             author = ChatMgr.build_efb_chat_as_member(chat, EFBGroupMember(
-                    name=remark or username or userwxid,
-                    alias= username, 
-                    uid=userwxid
+                    name = remark or username ,
+                    alias = (group_nick_name if group_nick_name != remark else None) or (username if remark != None else None) ,
+                    uid = userwxid
             ))
 
 
@@ -202,10 +198,7 @@ class CuteCatChannel(SlaveChannel):
 
 #获取全部联系人
     def get_chats(self) -> Collection['Chat']:
-        if 'chat' not in self.info_list or not self.info_list['chat']:
-            self.logger.debug("Chat list is empty. Fetching...")
-            self.update_friend_info()
-        return self.info_list['chat']
+        return self.update_friend_info()
 
 #获取联系人
     def get_chat(self, chat_uid: ChatID) -> 'Chat':
@@ -224,15 +217,28 @@ class CuteCatChannel(SlaveChannel):
         if msg.edit:
             pass  # todo
 
+        try:
+            filename = msg.file.name.split('/')[-1] if msg.file else msg.file.name
+        except:
+            pass
         if msg.type in [MsgType.Text , MsgType.Link]:
             self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
-        if msg.type in [MsgType.Image , MsgType.Sticker , MsgType.Video , MsgType.File]:
-            temp_msg = {'name' : msg.filename , 'url': self.self_url + msg.file.name}
+        elif msg.type in [MsgType.Image , MsgType.Sticker]:
+            temp_msg = {'name' : filename , 'url': self.self_url + msg.file.name}
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
-            if not self.config.get('receive_self_msg',False):
-                return msg
-            if data.get('code',None) !=0:
-                self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= "%s Send Failed" % msg.type)  
+        elif msg.type in [MsgType.File]:
+            temp_msg = {'name' : filename , 'url': self.self_url + msg.file.name}
+            data = self.bot.SendFileMsg( to_wxid=chat_uid , msg = temp_msg) or {}
+        elif msg.type in [MsgType.Video , MsgType.Animation]:
+            temp_msg = {'name' : filename , 'url': self.self_url + msg.file.name}
+            data = self.bot.SendVideoMsg( to_wxid=chat_uid , msg = temp_msg) or {}
+
+        if self.config.get('receive_self_msg',False):
+            if msg.type in [MsgType.Video , MsgType.Animation , MsgType.Image , MsgType.Sticker , MsgType.File]:
+                temp_msg = ("%s Send Success" % msg.type) if data.get('code') == 0 else ("%s Send Failed" % msg.type)
+                self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= temp_msg)
+            return msg
+ 
         return msg
 
 #to do
@@ -255,13 +261,25 @@ class CuteCatChannel(SlaveChannel):
 
 #更新好友信息
     def update_friend_info(self):
-        with self.update_friend_lock:
-            if 'friend' in self.info_list and self.info_list['friend']:
-                return
-            self.logger.info('Fetching friend list...')
-            self.get_all_info()
-            self.process_friend_info()
-            self.process_group_info()
+        if 'friend' in self.info_list and self.info_list['friend']:
+            return
+        self.info_dict['chat'] = {}
+        self.info_dict['friend'] = {}
+        self.logger.info('Fetching friend list...')
+        self.get_all_info()
+        friend_info = self.process_friend_info()
+        group_info = self.process_group_info()
+        return friend_info + group_info
+
+    def update_group_member_info(self, group_id: str):
+        group_members = self.get_group_members_list( group_id )
+        if not group_members:
+            return
+        self.group_member_info[group_id] = {}
+        for group_member in group_members:
+            if group_member['group_nickname']:
+                self.group_member_info[group_id][group_member['wxid']] = group_member['group_nickname']
+
 
 #获取全部好友信息
     def get_all_info(self):
@@ -270,7 +288,7 @@ class CuteCatChannel(SlaveChannel):
 
 #处理不同好友信息
     def process_group_info(self):
-        group = []
+        groups = []
         for group in self.info_list['group']:
             nickname = group['nickname']
             group_wxid = group['wxid']
@@ -280,11 +298,12 @@ class CuteCatChannel(SlaveChannel):
                     uid=group_wxid,
                     name=nickname
             )
-            self.info_list['chat'].append(ChatMgr.build_efb_chat_as_group(new_entity))
+            groups.append(ChatMgr.build_efb_chat_as_group(new_entity))
             self.info_dict['chat'][group_wxid] = new_entity
+        return groups
 
     def process_friend_info(self):
-        friend = []
+        friends = []
         for friend in self.info_list['friend']:
             nickname = friend['nickname']
             remark = friend['remark']
@@ -298,8 +317,9 @@ class CuteCatChannel(SlaveChannel):
                 name=nickname,
                 alias=remark,
             )
-            self.info_list['chat'].append(ChatMgr.build_efb_chat_as_private(new_entity))
+            friends.append(ChatMgr.build_efb_chat_as_private(new_entity))
             self.info_dict['chat'][wxid] = new_entity
+        return friends
 
     def process_group_members_info(self):
         group_member = []
@@ -311,18 +331,21 @@ class CuteCatChannel(SlaveChannel):
     def get_friend_list(self):
         friend_list = self.bot.GetFriendList()
         if friend_list:
-            self.info_list['friend'] = friend_list.get('data',None)
+            self.info_list['friend'] = friend_list.get('data', None)
 
     def get_group_list(self):
         group_list = self.bot.GetGroupList()
         if group_list:
-            self.info_list['group'] = group_list.get('data',None)
+            self.info_list['group'] = group_list.get('data', None)
 
     def get_group_members_list(self , group_wxid):
         group_member_list = self.bot.GetGroupMemberList(group_wxid = group_wxid)
-        (self.info_list['group_members']).extend(group_member_list.get('data',[None]))
+        if group_member_list:
+            return group_member_list.get('data', None)
 
     def get_friend_info(self, item: str, wxid: int) -> Union[None, str]:
-        if not self.info_dict.get('friend', None) or wxid not in self.info_dict['friend']:
+        if not self.info_dict.get('friend', None):
+            self.update_friend_info()
+        if not self.info_dict['friend'].get(wxid, None):
             return None
         return self.info_dict['friend'][wxid].get(item, None)    

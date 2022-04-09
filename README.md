@@ -1,9 +1,11 @@
 使用方法
 
+[详细教程 点击查看](https://honus.top/2022/04/09/569.html)
+
 1. 安装 python-CuteCat-iHttp 插件
 
    ```
-   pip3 install git+https://github.com/0honus0/python-CuteCat-iHttp.git
+   pip3 install -U git+https://github.com/0honus0/python-CuteCat-iHttp.git
    ```
 2. 安装efb-telegram-master
 
