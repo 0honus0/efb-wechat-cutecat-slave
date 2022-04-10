@@ -25,12 +25,13 @@ from .WechatPcMsgProcessor import MsgProcessor
 from .utils import process_quote_text, download_file
 
 TYPE_HANDLERS = {
-    'text' : MsgProcessor.text_msg,
-    'image' : MsgProcessor.image_msg,
-    'video' : MsgProcessor.video_msg,
-    'share' : MsgProcessor.share_link_msg,
-    'location' : MsgProcessor.location_msg,
-    'multivoip' : MsgProcessor.multivoip_msg
+    'text'            : MsgProcessor.text_msg,
+    'image'           : MsgProcessor.image_msg,
+    'video'           : MsgProcessor.video_msg,
+    'share'           : MsgProcessor.share_link_msg,
+    'location'        : MsgProcessor.location_msg,
+    'multivoip'       : MsgProcessor.multivoip_msg,
+    'animatedsticker' : MsgProcessor.image_msg
 }
 
 import sys
@@ -177,7 +178,7 @@ class CuteCatChannel(SlaveChannel):
                 return
             msg['msg'] = 'Not support for %s, Please check the message in wechat' % msg['type']
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
-        elif msg['type'] in ['video', 'image', 'location']:
+        elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker']:
             efb_msgs.append(TYPE_HANDLERS[msg['type']](msg))
         else:
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))

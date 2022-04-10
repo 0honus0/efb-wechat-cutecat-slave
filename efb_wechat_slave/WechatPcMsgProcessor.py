@@ -8,6 +8,7 @@ import re
 logger :logging.Logger = logging.getLogger(__name__)
 
 class MsgProcessor:
+
     @staticmethod
     def text_msg(msg: dict , chat):
         msg['msg'] = str(msg['msg'])
