@@ -1,5 +1,5 @@
 from typing import Mapping, Tuple, Union, IO
-import magic, re
+import magic
 from lxml import etree
 from traceback import print_exc
 
@@ -16,28 +16,9 @@ def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union
                 [[begin_index, end_index], {Chat or ChatMember}]
     :return: EFB Message
     """
-    """
-    add handle @, current doesn't consider @ yourself
-    """
-    if "[@at," in text:
-        at = re.findall(r"\[@at,(.+?)\]",text)
-        content = re.sub(r'\[@at,nickname=(.+?)\]','',text)
-        msg = ""
-        for each_people in at:
-            nickname = re.findall("^nickname=(.+),wxid",each_people)
-            wxid = re.findall("wxid=(.+)$",each_people)
-            if len(nickname)!=0:
-                msg+="@"+nickname[0]
-            else:
-                msg+="@"+wxid[0]
-        msg+='\n\n'+content
-    else:
-        msg=text
-        
-        
     efb_msg = Message(
         type=MsgType.Text,
-        text=msg
+        text=text
     )
     if ats:
         efb_msg.substitutions = Substitutions(ats)

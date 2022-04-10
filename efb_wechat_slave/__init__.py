@@ -166,7 +166,7 @@ class CuteCatChannel(SlaveChannel):
         elif msg['type'] in ['video', 'image', 'location', 'multivoip']:
             efb_msgs.append(TYPE_HANDLERS[msg['type']](msg))
         else:
-            efb_msgs.append(TYPE_HANDLERS['text'](msg))
+            efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
 
         for efb_msg in efb_msgs:
             efb_msg.author = author
@@ -292,6 +292,9 @@ class CuteCatChannel(SlaveChannel):
 #处理不同好友信息
     def process_group_info(self):
         groups = []
+        if not self.info_list['group']:
+            raise Exception('No group info , Check your config file')
+
         for group in self.info_list['group']:
             nickname = group['nickname']
             group_wxid = group['wxid']
@@ -307,6 +310,9 @@ class CuteCatChannel(SlaveChannel):
 
     def process_friend_info(self):
         friends = []
+        if not self.info_list['friend']:
+            raise Exception('No friend info , Check your config file')
+
         for friend in self.info_list['friend']:
             nickname = friend['nickname']
             remark = friend['remark']
