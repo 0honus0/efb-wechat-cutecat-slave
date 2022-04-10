@@ -10,6 +10,7 @@ logger :logging.Logger = logging.getLogger(__name__)
 class MsgProcessor:
     @staticmethod
     def text_msg(msg: dict , chat):
+        msg['msg'] = str(msg['msg'])
         at_list = {}
         if "[@at," in msg['msg']:
             text = msg['msg']
@@ -33,8 +34,8 @@ class MsgProcessor:
             msg['msg'] = temp_msg
         
         if at_list:
-            return efb_text_simple_wrapper(str(msg['msg']) , at_list)
-        return efb_text_simple_wrapper(str(msg['msg']))
+            return efb_text_simple_wrapper(msg['msg'] , at_list)
+        return efb_text_simple_wrapper(msg['msg'])
 
     @staticmethod
     def image_msg(msg: dict):

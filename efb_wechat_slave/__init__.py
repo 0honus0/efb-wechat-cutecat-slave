@@ -160,10 +160,10 @@ class CuteCatChannel(SlaveChannel):
                 efb_msgs.append(MsgProcessor.file_msg(msg))
             else:
                 efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
-        elif msg['type'] in ['miniprogram']:
-            msg['msg'] = 'Not support for applet messages, Please check the message in WeChat'
-            efb_msgs.append(TYPE_HANDLERS['text'](msg))
-        elif msg['type'] in ['video', 'image', 'location', 'multivoip']:
+        elif msg['type'] in ['miniprogram' , 'voip' , 'multivoip']:
+            msg['msg'] = 'Not support for %s, Please check the message in wechat' % msg['type']
+            efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
+        elif msg['type'] in ['video', 'image', 'location']:
             efb_msgs.append(TYPE_HANDLERS[msg['type']](msg))
         else:
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
