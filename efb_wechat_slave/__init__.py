@@ -53,6 +53,8 @@ class CuteCatChannel(SlaveChannel):
 
     logger: logging.Logger = logging.getLogger("plugins.%s.CuteCatiHttp" % channel_id)
 
+    logger.setLevel(logging.DEBUG)
+
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image, MsgType.Video,
                                 MsgType.File, MsgType.Link, MsgType.Voice, MsgType.Animation}
 
@@ -79,13 +81,23 @@ class CuteCatChannel(SlaveChannel):
                 return
 
             efb_msgs = []
-            if msg['final_from_wxid'] == self.robot_wxid:
+            if msg['type'] == 'taptap':
+                to_wxid = msg['to_wxid']
+                name = self.get_friend_info('nickname' , to_wxid)
+                remark = self.get_friend_info('remark' , to_wxid)
                 chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
-                    uid= msg['final_from_wxid'],
-                    name= 'My_Robot',
+                    uid= to_wxid ,
+                    name= remark or name or msg['msg'].split('拍了拍')[0]
                 ))
                 author = chat.other
-
+                self.handle_msg( msg = msg , author = author , chat = chat)
+                return
+            elif msg['final_from_wxid'] == self.robot_wxid:
+                chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
+                    uid= msg['final_from_wxid'],
+                    name= 'My_Robot'
+                ))
+                author = chat.other
                 self.handle_msg( msg = msg , author = author , chat = chat)
 
         @self.bot.on('EventGroupMsg')
@@ -136,7 +148,7 @@ class CuteCatChannel(SlaveChannel):
 
             self.handle_msg( msg = msg , author = author , chat = chat)
 
-        @self.bot.on('EventSysMsg')
+        #系统消息 暂时未发现该类有通知
         def on_sys_msg(msg : Dict[str, Any]):
             print(msg)
 
@@ -161,6 +173,8 @@ class CuteCatChannel(SlaveChannel):
             else:
                 efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
         elif msg['type'] in ['miniprogram' , 'voip' , 'multivoip']:
+            if "拍了拍" in msg['msg']:
+                return
             msg['msg'] = 'Not support for %s, Please check the message in wechat' % msg['type']
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
         elif msg['type'] in ['video', 'image', 'location']:

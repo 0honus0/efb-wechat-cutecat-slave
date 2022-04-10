@@ -236,8 +236,6 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
 
     return tuple(efb_msgs)
 
-
-
 def efb_location_wrapper(self, msg: str) -> Message:
     efb_msg = Message()
     '''msg = ast.literal_eval(text)'''
