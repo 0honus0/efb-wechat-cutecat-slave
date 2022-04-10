@@ -156,8 +156,10 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 try:
                     title = xml.xpath('/msg/appmsg/title/text()')[0]
                     url = xml.xpath('/msg/appmsg/url/text()')[0]
-                    des = xml.xpath('/msg/appmsg/des/text()')[0]
-                    thumburl = xml.xpath('/msg/appmsg/thumburl/text()')[0]
+                    if len(xml.xpath('/msg/appmsg/des/text()'))!=0:
+                        des = xml.xpath('/msg/appmsg/des/text()')[0]
+                    if len(xml.xpath('/msg/appmsg/thumburl/text()'))!=0:
+                        thumburl = xml.xpath('/msg/appmsg/thumburl/text()')[0]
 
                     sourceusername = xml.xpath('/msg/appmsg/sourceusername/text()')[0]
                     sourcedisplayname = xml.xpath('/msg/appmsg/sourcedisplayname/text()')[0]
