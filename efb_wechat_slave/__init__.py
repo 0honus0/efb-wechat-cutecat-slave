@@ -354,6 +354,11 @@ class CuteCatChannel(SlaveChannel):
             )
             friends.append(ChatMgr.build_efb_chat_as_private(new_entity))
             self.info_dict['chat'][wxid] = new_entity
+        new_entity = EFBPrivateChat(
+            uid= self.robot_wxid,
+            name= 'WeChat_Robot'
+        )
+        self.info_dict['chat'][self.robot_wxid] = new_entity
         return friends
 
     def process_group_members_info(self):
