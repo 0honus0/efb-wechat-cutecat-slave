@@ -181,6 +181,22 @@ class CuteCatChannel(SlaveChannel):
                 if efb_msg.file:
                     efb_msg.file.close()
 
+        @self.bot.on('EventSysMsg')
+        def on_sys_msg(msg : Dict[str, Any]):
+            print(msg)
+
+        @self.bot.on('EventFriendVerify')
+        def on_friend_verify(msg : Dict[str, Any]):
+            print(msg)
+        
+        @self.bot.on('EventReceivedTransfer')
+        def on_transfer(msg : Dict[str, Any]):
+            print(msg)
+
+        @self.bot.on('EventScanCashMoney')
+        def on_scan_cash_money(msg : Dict[str, Any]):
+            print(msg)
+
 #从本地读取配置
     def load_config(self):
         """
@@ -205,9 +221,12 @@ class CuteCatChannel(SlaveChannel):
         if 'chat' not in self.info_list or not self.info_list['chat']:
             self.logger.debug("Chat list is empty. Fetching...")
             self.update_friend_info()
-        for chat in self.info_list['chat']:
-            if chat_uid == chat.uid:
-                return chat
+        for chat in self.info_dict['chat']:
+            if chat_uid == chat:
+                if '@chatroom' in chat:
+                    return ChatMgr.build_efb_chat_as_group(self.info_dict['chat'][chat_uid])
+                else:
+                    return ChatMgr.build_efb_chat_as_private(self.info_dict['chat'][chat_uid])
         return None
 
 #发送消息
@@ -221,6 +240,7 @@ class CuteCatChannel(SlaveChannel):
             filename = msg.file.name.split('/')[-1] if msg.file else msg.file.name
         except:
             pass
+
         if msg.type in [MsgType.Text , MsgType.Link]:
             self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
         elif msg.type in [MsgType.Image , MsgType.Sticker]:
