@@ -3,6 +3,7 @@ import threading
 from traceback import print_exc
 
 import yaml
+import re
 from ehforwarderbot.chat import PrivateChat
 from typing import Optional, Collection, BinaryIO, Dict, Any , Union
 from datetime import datetime
@@ -141,9 +142,10 @@ class CuteCatChannel(SlaveChannel):
             wxid = msg['final_from_wxid']
             chat = None
             auther = None
+            remark = self.get_friend_info('remark', wxid)
             chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
                     uid=wxid,
-                    name= name or wxid,
+                    name= remark or name or wxid,
             ))
             author = chat.other
 
@@ -167,7 +169,7 @@ class CuteCatChannel(SlaveChannel):
 
     def handle_msg(self , msg : Dict[str, Any] , author : 'ChatMember' , chat : 'Chat'):
         efb_msgs = []
-        if msg['type']=='share':
+        if msg['type'] == 'share':
             # 判断分享的是文件类型
             if '/WeChat/savefiles/' in msg['msg']:
                 efb_msgs.append(MsgProcessor.file_msg(msg))
@@ -180,6 +182,17 @@ class CuteCatChannel(SlaveChannel):
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
         elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker']:
             efb_msgs.append(TYPE_HANDLERS[msg['type']](msg))
+        elif msg['type'] == 'revokemsg':
+            pat = "['|\"]msg_type['|\"]: (\d+),"
+            try:
+                msg_type = re.search(pat , str(msg['msg'])).group(1)
+            except:
+                msg_type = None
+            if msg_type in ['1']:
+                msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n ' + msg['msg']['revoked_msg']['content']
+            else:
+                msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n 不支持的消息类型'
+            efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
         else:
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
 
