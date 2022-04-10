@@ -35,8 +35,6 @@ TYPE_HANDLERS = {
     'animatedsticker' : MsgProcessor.image_msg
 }
 
-import sys
-
 class CuteCatChannel(SlaveChannel):
     channel_name: str = "Wechat Pc Slave"
     channel_emoji: str = "📱"
