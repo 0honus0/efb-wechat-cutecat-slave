@@ -307,7 +307,7 @@ class CuteCatChannel(SlaveChannel):
     def process_group_info(self):
         groups = []
         if not self.info_list['group']:
-            raise Exception('No group info , Check your config file')
+            self.logger.error('No group info , Check your config file')
 
         for group in self.info_list['group']:
             nickname = group['nickname']
@@ -325,7 +325,7 @@ class CuteCatChannel(SlaveChannel):
     def process_friend_info(self):
         friends = []
         if not self.info_list['friend']:
-            raise Exception('No friend info , Check your config file')
+            self.logger.error('No friend info , Check your config file')
 
         for friend in self.info_list['friend']:
             nickname = friend['nickname']
@@ -358,23 +358,19 @@ class CuteCatChannel(SlaveChannel):
 #获取好友
     def get_friend_list(self):
         friend_list = self.bot.GetFriendList()
-        if friend_list:
-            self.info_list['friend'] = friend_list.get('data', None)
+        self.info_list['friend'] = friend_list.get('data', None)
 
     def get_group_list(self):
         group_list = self.bot.GetGroupList()
-        if group_list:
-            self.info_list['group'] = group_list.get('data', None)
+        self.info_list['group'] = group_list.get('data', None)
 
     def get_group_members_list(self , group_wxid):
         group_member_list = self.bot.GetGroupMemberList(group_wxid = group_wxid)
-        if group_member_list:
-            return group_member_list.get('data', None)
+        return group_member_list.get('data', None)
 
     def get_group_member_info(self , member_wxid ):
         group_member_info = self.bot.GetGroupMemberInfo( member_wxid = member_wxid)
-        if group_member_info:
-            return group_member_info.get('data', None)
+        return group_member_info.get('data', None)
 
     def get_friend_info(self, item: str, wxid: int) -> Union[None, str]:
         if not self.info_dict.get('friend', None):
