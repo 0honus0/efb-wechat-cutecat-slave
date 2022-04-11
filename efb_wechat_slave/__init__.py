@@ -4,7 +4,8 @@ from traceback import print_exc
 
 import yaml
 import re
-from ehforwarderbot.chat import PrivateChat
+import time
+from ehforwarderbot.chat import PrivateChat , SystemChatMember
 from typing import Optional, Collection, BinaryIO, Dict, Any , Union
 from datetime import datetime
 
@@ -190,6 +191,46 @@ class CuteCatChannel(SlaveChannel):
             if efb_msg.file:
                 efb_msg.file.close()
 
+# 警告信息
+    def deliver_alert_to_master(self, message: str):
+        chat = {
+            'uid': 'WeChat_Slave',
+            'name': 'Alert',
+        }
+        self.send_msg_to_master(chat , message)
+
+    def send_msg_to_master(self , chat , message):
+        self.logger.debug(repr(message))
+        if not getattr(coordinator, "master", None):  # Master Channel not initialized
+            raise Exception(context["message"])
+        chat = ChatMgr.build_efb_chat_as_system_user(chat)
+        try:
+            author = chat.get_member(SystemChatMember.SYSTEM_ID)
+        except KeyError:
+            author = chat.add_system_member()
+        msg = Message(
+            uid="{uni_id}".format(uni_id=str(int(time.time()))),
+            type=MsgType.Text,
+            chat=chat,
+            author=author,
+            deliver_to=coordinator.master,
+        )
+
+        if message:
+            msg.text = message
+        coordinator.send_message(msg)
+
+
+    def check_status(self , t_event):
+        self.logger.debug("Start checking status...")
+        interval = 1800
+        res = self.bot.GetAppDir()
+        if not res:
+            self.deliver_alert_to_master('可爱猫已掉线，请检查设置')
+        if t_event is not None and not t_event.is_set():
+            self.check_status_timer = threading.Timer(interval, self.check_status, [t_event])
+            self.check_status_timer.start()
+
 #从本地读取配置
     def load_config(self):
         """
@@ -263,6 +304,9 @@ class CuteCatChannel(SlaveChannel):
         return None
 
     def poll(self):
+        timer = threading.Event()
+        self.check_status(timer)
+
         t = threading.Thread(target=self.bot.run)
         t.daemon = True
         t.start()
