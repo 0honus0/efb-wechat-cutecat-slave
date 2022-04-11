@@ -186,6 +186,13 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                             vendor_specific={ "is_mp": True }
                         )
                         efb_msgs.append(efb_msg)
+        elif type == 8:
+            # SendOutMsg 触发, 异为系统消息推送
+            efb_msg = Message(
+                type=MsgType.Text,
+                text='掷色子 或者 猜拳消息，请在手机端查看',
+            )
+            efb_msgs.append(efb_msg)
         elif type == 19: # 合并转发的聊天记录
             msg_title = xml.xpath('/msg/appmsg/title/text()')[0]
             forward_content = xml.xpath('/msg/appmsg/des/text()')[0]
