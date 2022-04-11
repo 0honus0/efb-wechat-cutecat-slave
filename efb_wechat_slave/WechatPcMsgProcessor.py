@@ -80,6 +80,31 @@ class MsgProcessor:
         return efb_location_wrapper(self, msg['msg'])
     
     @staticmethod
-    def multivoip_msg(msg: dict):
-        pass
+    def other_msg(msg: dict):
+        if '<banner>' in msg['msg']:
+            msg['msg'] = '收到/取消 群语音邀请'
+        elif '<notifydata>' in msg['msg']:
+            return None
+        elif '拍了拍' in msg['msg']:
+            return None
+        return efb_text_simple_wrapper(msg['msg'])
+
+    @staticmethod
+    def unsupported_msg(msg: dict):
+        mag_type = {'miniprogram' : '小程序' , 'voip' : '语音聊天' , 'voip' : '语音/视频聊天'}
+        msg['msg'] = '不支持 %s 消息类型, 请在微信端查看' % mag_type[msg['type']]
+        return efb_text_simple_wrapper(msg['msg'])
+    
+    @staticmethod
+    def revoke_msg(msg: dict):
+        pat = "['|\"]msg_type['|\"]: (\d+),"
+        try:
+            msg_type = re.search(pat , str(msg['msg'])).group(1)
+        except:
+            msg_type = None
+        if msg_type in ['1']:
+            msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n ' + msg['msg']['revoked_msg']['content']
+        else:
+            msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n 不支持的消息类型'
+        return efb_text_simple_wrapper(msg['msg'])
 

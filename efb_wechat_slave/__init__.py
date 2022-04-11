@@ -31,8 +31,10 @@ TYPE_HANDLERS = {
     'video'           : MsgProcessor.video_msg,
     'share'           : MsgProcessor.share_link_msg,
     'location'        : MsgProcessor.location_msg,
-    'multivoip'       : MsgProcessor.multivoip_msg,
-    'animatedsticker' : MsgProcessor.image_msg
+    'other'           : MsgProcessor.other_msg,
+    'animatedsticker' : MsgProcessor.image_msg,
+    'unsupported'     : MsgProcessor.unsupported_msg,
+    'revokemsg'       : MsgProcessor.revoke_msg,
 }
 
 class CuteCatChannel(SlaveChannel):
@@ -81,7 +83,7 @@ class CuteCatChannel(SlaveChannel):
                 return
 
             efb_msgs = []
-            if msg['type'] == 'taptap':
+            if msg['type'] == 'taptap' and '语音聊天' not in msg['msg']:
                 to_wxid = msg['to_wxid']
                 name = self.get_friend_info('nickname' , to_wxid)
                 remark = self.get_friend_info('remark' , to_wxid)
@@ -91,7 +93,6 @@ class CuteCatChannel(SlaveChannel):
                 ))
                 author = chat.other
                 self.handle_msg( msg = msg , author = author , chat = chat)
-                return
             elif msg['final_from_wxid'] == self.robot_wxid:
                 chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
                     uid= msg['final_from_wxid'],
@@ -173,24 +174,11 @@ class CuteCatChannel(SlaveChannel):
                 efb_msgs.append(MsgProcessor.file_msg(msg))
             else:
                 efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
-        elif msg['type'] in ['miniprogram' , 'voip' , 'multivoip']:
-            if "拍了拍" in msg['msg']:
-                return
-            msg['msg'] = 'Not support for %s, Please check the message in wechat' % msg['type']
-            efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
-        elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker']:
-            efb_msgs.append(TYPE_HANDLERS[msg['type']](msg))
-        elif msg['type'] == 'revokemsg':
-            pat = "['|\"]msg_type['|\"]: (\d+),"
-            try:
-                msg_type = re.search(pat , str(msg['msg'])).group(1)
-            except:
-                msg_type = None
-            if msg_type in ['1']:
-                msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n ' + msg['msg']['revoked_msg']['content']
-            else:
-                msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n 不支持的消息类型'
-            efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
+        elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker' , 'other' , 'revokemsg']:
+            efb_msg = TYPE_HANDLERS[msg['type']](msg)
+            efb_msgs.append(efb_msg) if efb_msg else efb_msgs
+        elif msg['type'] in ['miniprogram' , 'voip']:
+            efb_msgs.append(TYPE_HANDLERS['unsupported'](msg))
         else:
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
 
