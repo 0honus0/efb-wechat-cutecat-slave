@@ -95,7 +95,7 @@ class CuteCatChannel(SlaveChannel):
                 author = chat.other
                 self.handle_msg( msg = msg , author = author , chat = chat)
             elif msg['final_from_wxid'] == self.robot_wxid:
-                chat = self.info_dict['chat'][self.robot_wxid]
+                chat = ChatMgr.build_efb_chat_as_system_user(self.info_dict['chat'][self.robot_wxid])
                 author = chat.other
                 self.handle_msg( msg = msg , author = author , chat = chat)
 
