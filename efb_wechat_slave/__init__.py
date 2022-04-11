@@ -192,9 +192,9 @@ class CuteCatChannel(SlaveChannel):
                 efb_msg.file.close()
 
 # 警告信息
-    def deliver_alert_to_master(self, message: str):
+    def deliver_alert_to_master(self, message: str , uid : str = 'System'):
         chat = {
-            'uid': 'WeChat_Slave',
+            'uid': uid,
             'name': 'Alert',
         }
         self.send_msg_to_master(chat , message)
@@ -226,7 +226,7 @@ class CuteCatChannel(SlaveChannel):
         interval = 1800
         res = self.bot.GetAppDir()
         if not res:
-            self.deliver_alert_to_master('可爱猫已掉线，请检查设置')
+            self.deliver_alert_to_master( message = '可爱猫已掉线，请检查设置')
         if t_event is not None and not t_event.is_set():
             self.check_status_timer = threading.Timer(interval, self.check_status, [t_event])
             self.check_status_timer.start()
@@ -288,7 +288,7 @@ class CuteCatChannel(SlaveChannel):
         if self.config.get('receive_self_msg',False):
             if msg.type in [MsgType.Video , MsgType.Animation , MsgType.Image , MsgType.Sticker , MsgType.File]:
                 temp_msg = ("%s Send Success" % msg.type) if data.get('code') >= 0 else ("%s Send Failed" % msg.type)
-                self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= temp_msg)
+                self.deliver_alert_to_master(message = temp_msg , uid = self.robot_wxid)
             return msg
  
         return msg
