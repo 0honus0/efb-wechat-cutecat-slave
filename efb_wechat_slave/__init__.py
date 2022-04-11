@@ -176,6 +176,10 @@ class CuteCatChannel(SlaveChannel):
         elif msg['type'] in ['miniprogram' , 'voip' , 'multivoip']:
             if "拍了拍" in msg['msg']:
                 return
+            elif msg['type']=='multivoip':
+                 if (not ('<banner>' in msg['msg'])) and ('<notifydata>' in msg['msg']): 
+                 #初步判断，带banner和不带notifydata的应该是呼叫和挂断，反之是中间的连续消息。
+                    return
             msg['msg'] = 'Not support for %s, Please check the message in wechat' % msg['type']
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
         elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker']:
