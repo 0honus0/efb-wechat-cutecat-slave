@@ -3,6 +3,7 @@ import threading
 from traceback import print_exc
 
 import yaml
+import re
 from ehforwarderbot.chat import PrivateChat
 from typing import Optional, Collection, BinaryIO, Dict, Any , Union
 from datetime import datetime
@@ -25,15 +26,14 @@ from .WechatPcMsgProcessor import MsgProcessor
 from .utils import process_quote_text, download_file
 
 TYPE_HANDLERS = {
-    'text' : MsgProcessor.text_msg,
-    'image' : MsgProcessor.image_msg,
-    'video' : MsgProcessor.video_msg,
-    'share' : MsgProcessor.share_link_msg,
-    'location' : MsgProcessor.location_msg,
-    'multivoip' : MsgProcessor.multivoip_msg
+    'text'            : MsgProcessor.text_msg,
+    'image'           : MsgProcessor.image_msg,
+    'video'           : MsgProcessor.video_msg,
+    'share'           : MsgProcessor.share_link_msg,
+    'location'        : MsgProcessor.location_msg,
+    'multivoip'       : MsgProcessor.multivoip_msg,
+    'animatedsticker' : MsgProcessor.image_msg
 }
-
-import sys
 
 class CuteCatChannel(SlaveChannel):
     channel_name: str = "Wechat Pc Slave"
@@ -52,6 +52,8 @@ class CuteCatChannel(SlaveChannel):
     __version__ = version.__version__
 
     logger: logging.Logger = logging.getLogger("plugins.%s.CuteCatiHttp" % channel_id)
+
+    logger.setLevel(logging.DEBUG)
 
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image, MsgType.Video,
                                 MsgType.File, MsgType.Link, MsgType.Voice, MsgType.Animation}
@@ -79,22 +81,24 @@ class CuteCatChannel(SlaveChannel):
                 return
 
             efb_msgs = []
-            if msg['final_from_wxid'] == self.robot_wxid:
+            if msg['type'] == 'taptap':
+                to_wxid = msg['to_wxid']
+                name = self.get_friend_info('nickname' , to_wxid)
+                remark = self.get_friend_info('remark' , to_wxid)
                 chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
-                    uid= msg['final_from_wxid'],
-                    name= 'My_Robot',
+                    uid= to_wxid ,
+                    name= remark or name or msg['msg'].split('拍了拍')[0]
                 ))
                 author = chat.other
-
-                if msg['type'] == 'share':
-                    efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
-                else:
-                    efb_msgs.append(TYPE_HANDLERS['text'](msg))
-                for efb_msg in efb_msgs:
-                    efb_msg.author = author
-                    efb_msg.chat = chat
-                    efb_msg.deliver_to = coordinator.master
-                    coordinator.send_message(efb_msg)
+                self.handle_msg( msg = msg , author = author , chat = chat)
+                return
+            elif msg['final_from_wxid'] == self.robot_wxid:
+                chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
+                    uid= msg['final_from_wxid'],
+                    name= 'My_Robot'
+                ))
+                author = chat.other
+                self.handle_msg( msg = msg , author = author , chat = chat)
 
         @self.bot.on('EventGroupMsg')
         def on_group_msg(msg: Dict[str, Any]):
@@ -126,26 +130,7 @@ class CuteCatChannel(SlaveChannel):
                     uid = userwxid
             ))
 
-
-            efb_msgs = []
-            if msg['type']=='share':
-                # 判断分享的是文件类型
-                if '/WeChat/savefiles/' in msg['msg']:
-                    efb_msgs.append(MsgProcessor.file_msg(msg)) 
-                else:
-                    efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
-            elif msg['type'] in ['video', 'image', 'location', 'multivoip']:
-                efb_msgs.append(TYPE_HANDLERS[msg['type']](msg))
-            else:
-                efb_msgs.append(TYPE_HANDLERS['text'](msg))
-
-            for efb_msg in efb_msgs:
-                efb_msg.author = author
-                efb_msg.chat = chat
-                efb_msg.deliver_to = coordinator.master
-                coordinator.send_message(efb_msg)
-                if efb_msg.file:
-                    efb_msg.file.close()
+            self.handle_msg( msg = msg , author = author , chat = chat)
         
         @self.bot.on('EventFriendMsg')
         def on_friend_msg(msg: Dict[str, Any]):
@@ -155,31 +140,67 @@ class CuteCatChannel(SlaveChannel):
             wxid = msg['final_from_wxid']
             chat = None
             auther = None
+            remark = self.get_friend_info('remark', wxid)
             chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
                     uid=wxid,
-                    name= name or wxid,
+                    name= remark or name or wxid,
             ))
             author = chat.other
 
-            efb_msgs = []
-            if msg['type']=='share':
-                # 判断分享的是文件类型
-                if '/WeChat/savefiles/' in msg['msg']:
-                    efb_msgs.append(MsgProcessor.file_msg(msg))
-                else:
-                    efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
-            elif msg['type'] in ['video', 'image', 'location', 'multivoip']:
-                efb_msgs.append(TYPE_HANDLERS[msg['type']](msg))
-            else:
-                efb_msgs.append(TYPE_HANDLERS['text'](msg))
+            self.handle_msg( msg = msg , author = author , chat = chat)
 
-            for efb_msg in efb_msgs:
-                efb_msg.author = author
-                efb_msg.chat = chat
-                efb_msg.deliver_to = coordinator.master
-                coordinator.send_message(efb_msg)
-                if efb_msg.file:
-                    efb_msg.file.close()
+        #系统消息 暂时未发现该类有通知
+        def on_sys_msg(msg : Dict[str, Any]):
+            print(msg)
+
+        @self.bot.on('EventFriendVerify')
+        def on_friend_verify(msg : Dict[str, Any]):
+            print(msg)
+        
+        @self.bot.on('EventReceivedTransfer')
+        def on_transfer(msg : Dict[str, Any]):
+            print(msg)
+
+        @self.bot.on('EventScanCashMoney')
+        def on_scan_cash_money(msg : Dict[str, Any]):
+            print(msg)
+
+    def handle_msg(self , msg : Dict[str, Any] , author : 'ChatMember' , chat : 'Chat'):
+        efb_msgs = []
+        if msg['type'] == 'share':
+            # 判断分享的是文件类型
+            if '/WeChat/savefiles/' in msg['msg']:
+                efb_msgs.append(MsgProcessor.file_msg(msg))
+            else:
+                efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
+        elif msg['type'] in ['miniprogram' , 'voip' , 'multivoip']:
+            if "拍了拍" in msg['msg']:
+                return
+            msg['msg'] = 'Not support for %s, Please check the message in wechat' % msg['type']
+            efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
+        elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker']:
+            efb_msgs.append(TYPE_HANDLERS[msg['type']](msg))
+        elif msg['type'] == 'revokemsg':
+            pat = "['|\"]msg_type['|\"]: (\d+),"
+            try:
+                msg_type = re.search(pat , str(msg['msg'])).group(1)
+            except:
+                msg_type = None
+            if msg_type in ['1']:
+                msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n ' + msg['msg']['revoked_msg']['content']
+            else:
+                msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n 不支持的消息类型'
+            efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
+        else:
+            efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
+
+        for efb_msg in efb_msgs:
+            efb_msg.author = author
+            efb_msg.chat = chat
+            efb_msg.deliver_to = coordinator.master
+            coordinator.send_message(efb_msg)
+            if efb_msg.file:
+                efb_msg.file.close()
 
 #从本地读取配置
     def load_config(self):
@@ -205,9 +226,12 @@ class CuteCatChannel(SlaveChannel):
         if 'chat' not in self.info_list or not self.info_list['chat']:
             self.logger.debug("Chat list is empty. Fetching...")
             self.update_friend_info()
-        for chat in self.info_list['chat']:
-            if chat_uid == chat.uid:
-                return chat
+        for chat in self.info_dict['chat']:
+            if chat_uid == chat:
+                if '@chatroom' in chat:
+                    return ChatMgr.build_efb_chat_as_group(self.info_dict['chat'][chat_uid])
+                else:
+                    return ChatMgr.build_efb_chat_as_private(self.info_dict['chat'][chat_uid])
         return None
 
 #发送消息
@@ -219,23 +243,22 @@ class CuteCatChannel(SlaveChannel):
 
         try:
             filename = msg.file.name.split('/')[-1] if msg.file else msg.file.name
+            temp_msg = {'name' : filename , 'url': self.self_url + msg.file.name}
         except:
             pass
+
         if msg.type in [MsgType.Text , MsgType.Link]:
             self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
         elif msg.type in [MsgType.Image , MsgType.Sticker]:
-            temp_msg = {'name' : filename , 'url': self.self_url + msg.file.name}
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
         elif msg.type in [MsgType.File]:
-            temp_msg = {'name' : filename , 'url': self.self_url + msg.file.name}
             data = self.bot.SendFileMsg( to_wxid=chat_uid , msg = temp_msg) or {}
         elif msg.type in [MsgType.Video , MsgType.Animation]:
-            temp_msg = {'name' : filename , 'url': self.self_url + msg.file.name}
             data = self.bot.SendVideoMsg( to_wxid=chat_uid , msg = temp_msg) or {}
 
         if self.config.get('receive_self_msg',False):
             if msg.type in [MsgType.Video , MsgType.Animation , MsgType.Image , MsgType.Sticker , MsgType.File]:
-                temp_msg = ("%s Send Success" % msg.type) if data.get('code') == 0 else ("%s Send Failed" % msg.type)
+                temp_msg = ("%s Send Success" % msg.type) if data.get('code') >= 0 else ("%s Send Failed" % msg.type)
                 self.bot.SendTextMsg( to_wxid= self.robot_wxid , msg= temp_msg)
             return msg
  
@@ -243,7 +266,13 @@ class CuteCatChannel(SlaveChannel):
 
 #to do
     def get_chat_picture(self, chat: 'Chat') -> BinaryIO:
-        pass
+        wxid = chat.uid
+        user_info = self.get_group_member_info(wxid)
+        if user_info:
+            headimgurl =  user_info.get('headimgurl' , None)
+            if headimgurl:
+                return download_file(url = headimgurl)
+        return None
 
     def poll(self):
         t = threading.Thread(target=self.bot.run)
@@ -289,6 +318,9 @@ class CuteCatChannel(SlaveChannel):
 #处理不同好友信息
     def process_group_info(self):
         groups = []
+        if not self.info_list['group']:
+            raise Exception('No group info , Check your config file')
+
         for group in self.info_list['group']:
             nickname = group['nickname']
             group_wxid = group['wxid']
@@ -304,6 +336,9 @@ class CuteCatChannel(SlaveChannel):
 
     def process_friend_info(self):
         friends = []
+        if not self.info_list['friend']:
+            raise Exception('No friend info , Check your config file')
+
         for friend in self.info_list['friend']:
             nickname = friend['nickname']
             remark = friend['remark']
@@ -319,6 +354,11 @@ class CuteCatChannel(SlaveChannel):
             )
             friends.append(ChatMgr.build_efb_chat_as_private(new_entity))
             self.info_dict['chat'][wxid] = new_entity
+        new_entity = EFBPrivateChat(
+            uid= self.robot_wxid,
+            name= 'WeChat_Robot'
+        )
+        self.info_dict['chat'][self.robot_wxid] = new_entity
         return friends
 
     def process_group_members_info(self):
@@ -342,6 +382,11 @@ class CuteCatChannel(SlaveChannel):
         group_member_list = self.bot.GetGroupMemberList(group_wxid = group_wxid)
         if group_member_list:
             return group_member_list.get('data', None)
+
+    def get_group_member_info(self , member_wxid ):
+        group_member_info = self.bot.GetGroupMemberInfo( member_wxid = member_wxid)
+        if group_member_info:
+            return group_member_info.get('data', None)
 
     def get_friend_info(self, item: str, wxid: int) -> Union[None, str]:
         if not self.info_dict.get('friend', None):
