@@ -102,7 +102,6 @@ class CuteCatChannel(SlaveChannel):
             userwxid = msg['final_from_wxid'] or group_wxid
             username = msg['final_from_name'] or group_name
             group_nick_name = None
-            print(self.group_member_info.get(group_wxid , None))
             if self.group_member_info.get(group_wxid , None) == None:
                 self.group_member_info[group_wxid] = {}
                 self.update_group_member_info(group_wxid)
