@@ -143,8 +143,8 @@ class CuteCatChannel(SlaveChannel):
             modifier_nickname = msg['msg']["modifier_nickname"]
             old_group_name = msg['msg']['old_group_name']
             new_group_name = msg['msg']['new_group_name']
-            msg['msg'] = f"{modifier_nickname} 修改了群名 {old_group_name} 为 {new_group_name}"
-            self.deliver_alert_to_master( message = msg['msg'] , uid = group_wxid)
+            msg['msg'] = f"\"{modifier_nickname}\" 修改了群名 \"{old_group_name}\" 为 \"{new_group_name}\""
+            self.deliver_alert_to_master( message = msg['msg'] , uid = self.robot_wxid)
 
         @self.bot.on('EventFriendVerify')
         def on_friend_verify(msg : Dict[str, Any]):
