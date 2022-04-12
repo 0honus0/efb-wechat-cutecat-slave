@@ -131,11 +131,20 @@ class CuteCatChannel(SlaveChannel):
             auther = None
             remark = self.get_friend_info('remark', wxid)
             chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
-                    uid=wxid,
+                    uid= wxid,
                     name= remark or name or wxid,
             ))
             author = chat.other
             self.handle_msg( msg = msg , author = author , chat = chat)
+
+        @self.bot.on("EventSysMsg")
+        def on_sys_msg(msg: Dict[str, Any]):
+            group_wxid = msg['msg']['group_wxid']
+            modifier_nickname = msg['msg']["modifier_nickname"]
+            old_group_name = msg['msg']['old_group_name']
+            new_group_name = msg['msg']['new_group_name']
+            msg['msg'] = f"{modifier_nickname} 修改了群名 {old_group_name} 为 {new_group_name}"
+            self.deliver_alert_to_master( message = msg['msg'] , uid = group_wxid)
 
         @self.bot.on('EventFriendVerify')
         def on_friend_verify(msg : Dict[str, Any]):
