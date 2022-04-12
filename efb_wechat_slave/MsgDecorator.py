@@ -113,7 +113,9 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     处理msgType49消息 - 复合xml, xml 中 //appmsg/type 指示具体消息类型.
     /msg/appmsg/type
     已知：
+    //appmsg/type = 3 : 音乐分享
     //appmsg/type = 5 : 链接（公众号文章）
+    //appmsg/type = 8 : 掷色子 或者 猜拳消息
     //appmsg/type = 17 : 实时位置共享
     //appmsg/type = 19 : 合并转发的聊天记录
     //appmsg/type = 21 : 微信运动
@@ -129,8 +131,34 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     result_text = ""
     try: 
         type = int(xml.xpath('/msg/appmsg/type/text()')[0])
-
-        if type == 5: # xml链接
+        if type == 3:
+            try:
+                music_name = xml.xpath('/msg/appmsg/title/text()')[0]
+                music_singer = xml.xpath('/msg/appmsg/des/text()')[0]
+            except:
+                efb_msg = Message(
+                    type = MsgType.Text,
+                    text = "无效的音乐分享",
+                    vendor_specific={ "is_forwarded": True }
+                )
+            try:
+                thumb_url = xml.xpath('/msg/appmsg/url/text()')[0]
+                attribute = LinkAttribute(
+                    title = music_name + '/' + music_singer,
+                    description = None,
+                    url = thumb_url ,
+                    image = None
+                )
+                efb_msg = Message(
+                    attributes=attribute,
+                    type=MsgType.Link,
+                    text= '来自好友音乐分享',
+                    vendor_specific={ "is_mp": True }
+                )
+            except:
+                pass
+            efb_msgs.append(efb_msg)
+        elif type == 5: # xml链接
             showtype = int(xml.xpath('/msg/appmsg/showtype/text()')[0])
             if showtype == 0: # 消息对话中的(测试的是从公众号转发给好友, 不排除其他情况)
                 title = url = des = thumburl = None # 初始化
