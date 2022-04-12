@@ -114,6 +114,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     /msg/appmsg/type
     已知：
     //appmsg/type = 3 : 音乐分享
+    //appmsg/type = 3 : 至少包含小红书分享
     //appmsg/type = 5 : 链接（公众号文章）
     //appmsg/type = 8 : 掷色子 或者 猜拳消息
     //appmsg/type = 17 : 实时位置共享
@@ -158,6 +159,17 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 )
             except:
                 pass
+            efb_msgs.append(efb_msg)
+        elif type == 4: # 至少包含小红书分享
+            title = xml.xpath('/msg/appmsg/title/text()')[0]
+            url = xml.xpath('/msg/appmsg/url/text()')[0]
+            app = xml.xpath('/msg/appinfo/appname/text()')[0]
+            result_text += f"{title}\n---from{app}\n{url}"
+            efb_msg = Message(
+                type=MsgType.Text,
+                text=result_text,
+                vendor_specific={ "is_otherappshare": True }
+            )
             efb_msgs.append(efb_msg)
         elif type == 5: # xml链接
             showtype = int(xml.xpath('/msg/appmsg/showtype/text()')[0])
