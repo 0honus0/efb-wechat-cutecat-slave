@@ -119,6 +119,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     //appmsg/type = 17 : 实时位置共享
     //appmsg/type = 19 : 合并转发的聊天记录
     //appmsg/type = 21 : 微信运动
+    //appmsg/type = 51 : 微信视频号分享
     //appmsg/type = 74 : 文件 (收到文件的第一个提示)
     //appmsg/type = 6 : 文件 （收到文件的第二个提示【文件下载完成】)，也有可能 msgType = 10000 【【提示文件有风险】没有任何有用标识，无法判断是否与前面哪条消息有关联】
     //appmsg/type = 57 : 【感谢 @honus 提供样本 xml】引用(回复)消息，未细致研究哪个参数是被引用的消息 id 
@@ -131,7 +132,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     result_text = ""
     try: 
         type = int(xml.xpath('/msg/appmsg/type/text()')[0])
-        if type == 3:
+        if type == 3: #音乐分享
             try:
                 music_name = xml.xpath('/msg/appmsg/title/text()')[0]
                 music_singer = xml.xpath('/msg/appmsg/des/text()')[0]
@@ -240,6 +241,15 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 type=MsgType.Text,
                 text=result_text,
                 vendor_specific={ "is_wechatsport": True }
+            )
+            efb_msgs.append(efb_msg)
+        elif type == 51: # 微信视频号分享
+            title = xml.xpath('/msg/appmsg/title/text()')[0]
+            result_text += f"微信视频号分享\n---------------------\n{title}"
+            efb_msg = Message(
+                type=MsgType.Text,
+                text=result_text,
+                vendor_specific={ "is_video": True }
             )
             efb_msgs.append(efb_msg)
         elif type == 57: # 引用（回复）消息
