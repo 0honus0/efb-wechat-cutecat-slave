@@ -140,10 +140,6 @@ class CuteCatChannel(SlaveChannel):
         @self.bot.on('EventFriendVerify')
         def on_friend_verify(msg : Dict[str, Any]):
             print(msg)
-        
-        @self.bot.on('EventReceivedTransfer')
-        def on_transfer(msg : Dict[str, Any]):
-            print(msg)
 
         @self.bot.on('EventScanCashMoney')
         def on_scan_cash_money(msg : Dict[str, Any]):

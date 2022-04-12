@@ -144,7 +144,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             try:
                 thumb_url = xml.xpath('/msg/appmsg/url/text()')[0]
                 attribute = LinkAttribute(
-                    title = music_name + '/' + music_singer,
+                    title = music_name + ' / ' + music_singer,
                     description = None,
                     url = thumb_url ,
                     image = None
