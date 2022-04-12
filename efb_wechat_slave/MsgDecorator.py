@@ -162,9 +162,10 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             efb_msgs.append(efb_msg)
         elif type == 4: # 至少包含小红书分享
             title = xml.xpath('/msg/appmsg/title/text()')[0]
+            des = xml.xpath('/msg/appmsg/des/text()')[0]
             url = xml.xpath('/msg/appmsg/url/text()')[0]
             app = xml.xpath('/msg/appinfo/appname/text()')[0]
-            result_text += f"{title}\n---from{app}\n{url}"
+            result_text += f"{title}\n----from{app}\n{des}\n{url}"
             efb_msg = Message(
                 type=MsgType.Text,
                 text=result_text,
