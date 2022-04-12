@@ -3,27 +3,6 @@ import tempfile
 import threading
 import requests as requests
 
-
-def process_quote_text(text: str, max_length: int) -> str:
-    """
-    Simple wrapper for processing quoted text
-    :param text: Original text
-    :param max_length: The max length before the string are truncated
-    :return: Processed text
-    """
-    qt_txt = "%s" % text
-    if max_length > 0:
-        tgt_text = qt_txt[:max_length]
-        if len(qt_txt) >= max_length:
-            tgt_text += "…"
-        tgt_text = "「%s」" % tgt_text
-    elif max_length < 0:
-        tgt_text = "「%s」" % qt_txt
-    else:
-        tgt_text = ""
-    return tgt_text
-
-
 def download_file(url: str, retry: int = 3) -> tempfile:
     """
     A function that downloads files from given URL

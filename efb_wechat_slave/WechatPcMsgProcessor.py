@@ -87,6 +87,8 @@ class MsgProcessor:
             return None
         elif '拍了拍' in msg['msg']:
             return None
+        elif 'ClientCheckConsistency' in msg['msg']:
+            msg['msg'] = '客户端一致性检查'
         return efb_text_simple_wrapper(msg['msg'])
 
     @staticmethod
@@ -103,8 +105,7 @@ class MsgProcessor:
         except:
             msg_type = None
         if msg_type in ['1']:
-            msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n ' + msg['msg']['revoked_msg']['content']
+            msg['msg'] = '「撤回了一条消息」 \n  - - - - - - - - - - - - - - - \n ' + msg['msg']['revoked_msg']['content']
         else:
-            msg['msg'] = ' 「撤回了一条消息」 \n - - - - - - - - - - - - - - - \n 不支持的消息类型'
+            msg['msg'] = '「撤回了一条消息」 \n  - - - - - - - - - - - - - - - \n 不支持的消息类型'
         return efb_text_simple_wrapper(msg['msg'])
-
