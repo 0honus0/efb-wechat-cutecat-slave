@@ -31,7 +31,7 @@ class MsgProcessor:
                             temp_msg += ' @me'
                             end_index = len(temp_msg)
                             at_list[(begin_index, end_index)] = chat.self
-            temp_msg+=' '+content
+            temp_msg+='\n'+(content.strip())
             msg['msg'] = temp_msg
         
         if at_list:
