@@ -144,6 +144,18 @@ class CuteCatChannel(SlaveChannel):
         @self.bot.on('EventScanCashMoney')
         def on_scan_cash_money(msg : Dict[str, Any]):
             print(msg)
+            
+        @self.bot.on('EventGroupMemberAdd')
+        def on_group_member_add(msg : Dict[str, Any]):
+            print(msg)
+            
+        @self.bot.on('EventGroupMemberDecrease')
+        def on_group_member_decrease(msg : Dict[str, Any]):
+            print(msg)
+            
+        @self.bot.on('EventReceivedTransfer')
+        def on_received_transfer(msg : Dict[str, Any]):
+            print(msg)
 
     #处理消息
     def handle_msg(self , msg : Dict[str, Any] , author : 'ChatMember' , chat : 'Chat'):
