@@ -114,7 +114,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     /msg/appmsg/type
     已知：
     //appmsg/type = 3 : 音乐分享
-    //appmsg/type = 3 : 至少包含小红书分享
+    //appmsg/type = 4 : 至少包含小红书分享
     //appmsg/type = 5 : 链接（公众号文章）
     //appmsg/type = 8 : 掷色子 或者 猜拳消息
     //appmsg/type = 17 : 实时位置共享
