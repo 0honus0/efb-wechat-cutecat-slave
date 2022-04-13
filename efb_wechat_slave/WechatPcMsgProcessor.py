@@ -94,7 +94,7 @@ class MsgProcessor:
     @staticmethod
     def unsupported_msg(msg: dict):
         mag_type = {'miniprogram' : '小程序' , 'voip' : '语音聊天' , 'voip' : '语音/视频聊天'}
-        msg['msg'] = '%s\n---------------------\n不支持的消息类型, 请在微信端查看' % mag_type[msg['type']]
+        msg['msg'] = '%s\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看' % mag_type[msg['type']]
         return efb_text_simple_wrapper(msg['msg'])
     
     @staticmethod

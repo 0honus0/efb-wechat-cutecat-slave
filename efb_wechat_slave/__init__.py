@@ -24,20 +24,7 @@ from .ChatMgr import ChatMgr
 from .CustomTypes import EFBGroupChat, EFBPrivateChat, EFBGroupMember
 from .MsgDecorator import efb_text_simple_wrapper
 from .WechatPcMsgProcessor import MsgProcessor
-from .utils import download_file
-
-import re
-import json
-
-def emoji_telegram2wechat(msg):
-    text = json.dumps(msg).strip("\"")
-    emojis2 = re.findall('(\\\\u[a-z|A-Z|0-9]{4}\\\\u[a-z|0-9]{4})',text)
-    for emoji in emojis2:
-        text = text.replace(emoji, '[@emoji='+emoji+']')
-    #emojis1 = re.findall('(\\\\u[a-z|A-Z|0-9]{4})',text)
-    #for emoji in emojis1:
-    #   text = text.replace(emoji, '[@emoji='+emoji+']')
-    return text
+from .utils import download_file , emoji_telegram2wechat
 
 TYPE_HANDLERS = {
     'text'            : MsgProcessor.text_msg,
@@ -290,10 +277,8 @@ class CuteCatChannel(SlaveChannel):
             pass
 
         if msg.type in [MsgType.Text , MsgType.Link]:
-            print("msgsendoutcontent"+msg.text)
-            msg_new=emoji_telegram2wechat(msg.text)
-            print("msgsendoutcontent"+msg_new)
-            self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg_new)
+            temp_msg=emoji_telegram2wechat(msg.text)
+            self.bot.SendTextMsg( to_wxid=chat_uid , msg=temp_msg)
         elif msg.type in [MsgType.Image , MsgType.Sticker]:
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
         elif msg.type in [MsgType.File]:

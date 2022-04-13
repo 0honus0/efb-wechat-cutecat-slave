@@ -258,7 +258,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             efb_msgs.append(efb_msg)
         elif type == 51: # 微信视频号分享
             title = xml.xpath('/msg/appmsg/title/text()')[0]
-            result_text += f"微信视频号分享\n---------------------\n{title}"
+            result_text += f"微信视频号分享\n  - - - - - - - - - - - - - - - \n{title}"
             efb_msg = Message(
                 type=MsgType.Text,
                 text=result_text,
@@ -273,9 +273,9 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             refer_displayname = xml.xpath('/msg/appmsg/refermsg/displayname/text()')[0] # 被引用消息发送人微信名称
             refer_content = xml.xpath('/msg/appmsg/refermsg/content/text()')[0] # 被引用消息内容
             if refer_msgType == 1: # 被引用的消息是文本
-                result_text += f"「{refer_displayname}:\n{refer_content}」\n---------------------\n{msg}"
+                result_text += f"「{refer_displayname}:\n{refer_content}」\n  - - - - - - - - - - - - - - - \n{msg}"
             else: # 被引用的消息非文本，提示不支持
-                result_text += f"「{refer_displayname}:\n系统消息：被引用的消息不是文本，暂不支持展示」\n---------------------\n{msg}"
+                result_text += f"「{refer_displayname}:\n系统消息：被引用的消息不是文本，暂不支持展示」\n  - - - - - - - - - - - - - - - \n{msg}"
             efb_msg = Message(
                 type=MsgType.Text,
                 text=result_text,
