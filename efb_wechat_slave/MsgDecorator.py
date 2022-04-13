@@ -140,7 +140,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             except:
                 efb_msg = Message(
                     type = MsgType.Text,
-                    text = "无效的音乐分享",
+                    text = "- - - - - - - - - - - - - - - \n无效的音乐分享",
                     vendor_specific={ "is_forwarded": True }
                 )
             try:
@@ -154,7 +154,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 efb_msg = Message(
                     attributes=attribute,
                     type=MsgType.Link,
-                    text= '来自好友音乐分享',
+                    text= None,
                     vendor_specific={ "is_mp": True }
                 )
             except:
