@@ -124,10 +124,14 @@ class MsgProcessor:
             return efb_unsupported_wrapper(msg['msg'])
         else:
             f = tempfile.NamedTemporaryFile()
-            if not pilk.decode(input_file.name, f.name):
-                msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
-                return efb_unsupported_wrapper(msg['msg'])
-            pydub.AudioSegment.from_raw(file= f , sample_width=2, frame_rate=24000, channels=1) \
-                .export( f , format="ogg", codec="libopus",
-                        parameters=['-vbr', 'on'])
-            return efb_file_wrapper(f , filename= url.split('/')[-1])
+            input_file.seek(0)
+            silk_header = input_file.read(10)
+            input_file.seek(0)
+            if b"#!SILK_V3" in silk_header:
+                pydub.AudioSegment.from_raw(file= f , sample_width=2, frame_rate=24000, channels=1) \
+                    .export( f , format="ogg", codec="libopus",
+                            parameters=['-vbr', 'on'])
+                return efb_file_wrapper(f , filename= url.split('/')[-1])
+            msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
+            return efb_unsupported_wrapper(msg['msg'])
+            
