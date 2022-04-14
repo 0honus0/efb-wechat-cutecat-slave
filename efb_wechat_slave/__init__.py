@@ -187,6 +187,7 @@ class CuteCatChannel(SlaveChannel):
         elif msg['type'] in ['miniprogram' , 'voip']:
             efb_msgs.append(TYPE_HANDLERS['unsupported'](msg))
         else:
+            msg['msg'] = emoji_wechat2telegram(msg['msg'])
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
 
         for efb_msg in efb_msgs:

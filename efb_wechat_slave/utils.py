@@ -39,6 +39,14 @@ def emoji_telegram2wechat(msg):
         text = text.replace(emoji, '[@emoji=' + json.dumps(emoji).strip("\"") + ']')
     return text
 
+def emoji_wechat2telegram(msg):
+    text = msg
+    emojiList = re.findall(r'(?<=\[@emoji=)[\\0-9A-Za-z]*(?=\])', text)
+    for emoji in emojiList:
+        # 将 "\\ud83d\\ude4b" 转为 Unicode 表情
+        text = text.replace(f"[@emoji={emoji}]", emoji.encode('utf-8').decode("unicode-escape").encode('utf-16', 'surrogatepass').decode('utf-16'))
+    return text
+
 WC_EMOTICON_CONVERSION = {
     '[微笑]': '😃', '[Smile]': '😃',
     '[撇嘴]': '😖', '[Grimace]': '😖',
