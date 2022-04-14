@@ -51,7 +51,9 @@ class CuteCatChannel(SlaveChannel):
 
     __version__ = version.__version__
     logger: logging.Logger = logging.getLogger("plugins.%s.CuteCatiHttp" % channel_id)
-    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image, MsgType.Video,
                                 MsgType.File, MsgType.Link, MsgType.Voice, MsgType.Animation}
@@ -72,7 +74,7 @@ class CuteCatChannel(SlaveChannel):
 
         @self.bot.on('EventSendOutMsg')
         def on_self_msg(msg: Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
 
             efb_msgs = []
             #只处理系统消息中的拍了拍消息
@@ -89,13 +91,16 @@ class CuteCatChannel(SlaveChannel):
             if not self.config.get('receive_self_msg',False):
                 return
             if msg['final_from_wxid'] == self.robot_wxid and msg['type'] != 'sysmsg':
-                chat = ChatMgr.build_efb_chat_as_system_user(self.info_dict['chat'][self.robot_wxid])
+                chat = ChatMgr.build_efb_chat_as_system_user(EFBPrivateChat(
+                    uid= self.robot_wxid,
+                    name= 'WeChat_Robot'
+                ))
                 author = chat.other
                 self.handle_msg( msg = msg , author = author , chat = chat)
 
         @self.bot.on('EventGroupMsg')
         def on_group_msg(msg: Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
 
             group_wxid = msg['from_wxid']
             group_name = msg['from_name']
@@ -123,7 +128,7 @@ class CuteCatChannel(SlaveChannel):
         
         @self.bot.on('EventFriendMsg')
         def on_friend_msg(msg: Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
 
             name = msg['final_from_name']
             wxid = msg['final_from_wxid']
@@ -148,23 +153,23 @@ class CuteCatChannel(SlaveChannel):
 
         @self.bot.on('EventFriendVerify')
         def on_friend_verify(msg : Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
 
         @self.bot.on('EventScanCashMoney')
         def on_scan_cash_money(msg : Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
             
         @self.bot.on('EventGroupMemberAdd')
         def on_group_member_add(msg : Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
             
         @self.bot.on('EventGroupMemberDecrease')
         def on_group_member_decrease(msg : Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
             
         @self.bot.on('EventReceivedTransfer')
         def on_received_transfer(msg : Dict[str, Any]):
-            print(msg)
+            self.logger.debug(msg)
 
     #处理消息
     def handle_msg(self , msg : Dict[str, Any] , author : 'ChatMember' , chat : 'Chat'):
@@ -327,7 +332,7 @@ class CuteCatChannel(SlaveChannel):
             return
         self.info_dict['chat'] = {}
         self.info_dict['friend'] = {}
-        self.logger.info('Fetching friend list...')
+        self.logger.debug('Fetching friend list...')
         self.get_friend_list()
         self.get_group_list()
         return self.process_friend_info() + self.process_group_info()
@@ -404,8 +409,7 @@ class CuteCatChannel(SlaveChannel):
         return group_member_info.get('data', None)
 
     def get_friend_info(self, item: str, wxid: int) -> Union[None, str]:
-        if not self.info_dict.get('friend', None):
+        if not self.info_dict.get('friend', None) or (wxid not in self.info_dict['friend']):
             self.update_friend_info()
-        if not self.info_dict['friend'].get(wxid, None):
             return None
         return self.info_dict['friend'][wxid].get(item, None)    
