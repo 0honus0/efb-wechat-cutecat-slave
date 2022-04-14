@@ -328,7 +328,7 @@ class CuteCatChannel(SlaveChannel):
 
     #更新好友信息
     def update_friend_info(self):
-        if 'friend' in self.info_list and self.info_list['friend']:
+        if 'chat' in self.info_list and 'friend' in self.info_list:
             return
         self.info_dict['chat'] = {}
         self.info_dict['friend'] = {}
@@ -350,6 +350,7 @@ class CuteCatChannel(SlaveChannel):
         groups = []
         if not self.info_list['group']:
             self.logger.error('No group info , Check your config file')
+            return []
 
         for group in self.info_list['group']:
             nickname = group['nickname']
@@ -368,6 +369,7 @@ class CuteCatChannel(SlaveChannel):
         friends = []
         if not self.info_list['friend']:
             self.logger.error('No friend info , Check your config file')
+            return []
 
         for friend in self.info_list['friend']:
             nickname = friend['nickname']
@@ -394,22 +396,36 @@ class CuteCatChannel(SlaveChannel):
     #获取好友
     def get_friend_list(self):
         friend_list = self.bot.GetFriendList()
-        self.info_list['friend'] = friend_list.get('data', None)
+        if friend_list:
+            self.info_list['friend'] = friend_list.get('data', None)
+        else:
+            self.info_list['friend'] = []
 
     def get_group_list(self):
         group_list = self.bot.GetGroupList()
-        self.info_list['group'] = group_list.get('data', None)
+        if group_list:
+            self.info_list['group'] = group_list.get('data', None)
+        else:
+            self.info_list['group'] = []
 
     def get_group_members_list(self , group_wxid):
         group_member_list = self.bot.GetGroupMemberList(group_wxid = group_wxid)
-        return group_member_list.get('data', None)
+        if group_member_list:
+            return group_member_list.get('data', None)
+        else:
+            return []
 
     def get_group_member_info(self , member_wxid ):
         group_member_info = self.bot.GetGroupMemberInfo( member_wxid = member_wxid)
-        return group_member_info.get('data', None)
+        if group_member_info:
+            return group_member_info.get('data', None)
+        else:
+            return []
 
     def get_friend_info(self, item: str, wxid: int) -> Union[None, str]:
-        if not self.info_dict.get('friend', None) or (wxid not in self.info_dict['friend']):
+        if self.info_dict.get('friend', None) == None:
+            self.info_dict['friend'] = {}
             self.update_friend_info()
+        if wxid not in self.info_dict['friend']:
             return None
-        return self.info_dict['friend'][wxid].get(item, None)    
+        return self.info_dict['friend'][wxid].get(item, None)
