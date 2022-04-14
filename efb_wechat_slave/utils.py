@@ -4,6 +4,7 @@ import threading
 import requests as requests
 import re
 import json
+import emoji as Emoji
 
 def download_file(url: str, retry: int = 3) -> tempfile:
     """
@@ -32,24 +33,18 @@ def download_file(url: str, retry: int = 3) -> tempfile:
     return file
 
 def emoji_telegram2wechat(msg):
-    text = json.dumps(msg).strip("\"")
-    #emojis = re.findall("(\\\\ud83c\\\\ud[c-f][0-9a-f][0-9a-f]|\\\\ud83d\\\\ud[c-f][0-9a-f][0-9a-f]|\\\\ud83e\\\\ud[c-f][0-9a-f][0-9a-f]|\\\\u2[6-7][0-9a-f][0-9a-f])",text)
-    #emojis_connect = re.findall("(\\\\u200d)",text)
-    #emojis_des = re.findall("(\\\\ufe0f|\\\\u2708|\\\\u2642)",text)
-    pattern_emoji = r"(\\ud83c\\ud[c-f][0-9a-f][0-9a-f]|\\ud83d\\ud[c-f][0-9a-f][0-9a-f]|\\ud83e\\ud[c-f][0-9a-f][0-9a-f]|\\u2[6-7][0-9a-f][0-9a-f])"
-    pattern_connect = r"(\\u200d)"
-    pattern_des = r"(\\ufe0f)"
-    emojis = re.findall(pattern_emoji,text)
-    emojis_connect = re.findall(pattern_connect,text)
-    emojis_des = re.findall(pattern_des,text)
-    emojis+=emojis_connect+emojis_des
-    for emoji in list(set(list((filter(None, emojis))))):
-        text = text.replace(emoji, '[@emoji='+emoji+']')
-    pattern_split = r"\[@emoji=.+?\]"
-    texts = re.split(pattern_split,text)
-    for each in list(set(list((filter(None, texts))))):
-        text=text.replace(each, json.loads("\""+each+"\""))
-    #return json.loads(text)
+    text = msg
+    emojiList = Emoji.get_emoji_regexp().findall(text)
+    for emoji in emojiList:
+        text = text.replace(emoji, '[@emoji=' + json.dumps(emoji).strip("\"") + ']')
+    return text
+
+def emoji_wechat2telegram(msg):
+    text = msg
+    emojiList = re.findall(r'(?<=\[@emoji=)[\\0-9A-Za-z]*(?=\])', text)
+    for emoji in emojiList:
+        # 将 "\\ud83d\\ude4b" 转为 Unicode 表情
+        text = text.replace(f"[@emoji={emoji}]", emoji.encode('utf-8').decode("unicode-escape").encode('utf-16', 'surrogatepass').decode('utf-16'))
     return text
 
 WC_EMOTICON_CONVERSION = {

@@ -187,6 +187,7 @@ class CuteCatChannel(SlaveChannel):
         elif msg['type'] in ['miniprogram' , 'voip']:
             efb_msgs.append(TYPE_HANDLERS['unsupported'](msg))
         else:
+            msg['msg'] = emoji_wechat2telegram(msg['msg'])
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
 
         for efb_msg in efb_msgs:
@@ -285,7 +286,6 @@ class CuteCatChannel(SlaveChannel):
         if msg.type in [MsgType.Text , MsgType.Link]:
             temp_msg=emoji_telegram2wechat(msg.text)
             self.bot.SendTextMsg( to_wxid=chat_uid , msg=temp_msg)
-            #self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
         elif msg.type in [MsgType.Image , MsgType.Sticker]:
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
         elif msg.type in [MsgType.File]:

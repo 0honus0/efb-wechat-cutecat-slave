@@ -28,7 +28,8 @@ setup(
         "cachetools",
         "requests",
         "python-magic",
-        "lxml"
+        "lxml",
+        "emoji"
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
