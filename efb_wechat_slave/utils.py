@@ -4,6 +4,7 @@ import threading
 import requests as requests
 import re
 import json
+import emoji as Emoji
 
 def download_file(url: str, retry: int = 3) -> tempfile:
     """
@@ -32,13 +33,10 @@ def download_file(url: str, retry: int = 3) -> tempfile:
     return file
 
 def emoji_telegram2wechat(msg):
-    text = json.dumps(msg).strip("\"")
-    emojis2 = re.findall('(\\\\u[a-z|A-Z|0-9]{4}\\\\u[a-z|0-9]{4})',text)
-    for emoji in emojis2:
-        text = text.replace(emoji, '[@emoji='+emoji+']')
-    #emojis1 = re.findall('(\\\\u[a-z|A-Z|0-9]{4})',text)
-    #for emoji in emojis1:
-    #   text = text.replace(emoji, '[@emoji='+emoji+']')
+    text = msg
+    emojiList = Emoji.get_emoji_regexp().findall(text)
+    for emoji in emojiList:
+        text = text.replace(emoji, '[@emoji=' + json.dumps(emoji).strip("\"") + ']')
     return text
 
 WC_EMOTICON_CONVERSION = {
