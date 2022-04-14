@@ -24,12 +24,13 @@ from .ChatMgr import ChatMgr
 from .CustomTypes import EFBGroupChat, EFBPrivateChat, EFBGroupMember
 from .MsgDecorator import efb_text_simple_wrapper
 from .WechatPcMsgProcessor import MsgProcessor
-from .utils import download_file , emoji_telegram2wechat
+from .utils import download_file , emoji_telegram2wechat , emoji_wechat2telegram
 
 TYPE_HANDLERS = {
     'text'            : MsgProcessor.text_msg,
     'image'           : MsgProcessor.image_msg,
     'video'           : MsgProcessor.video_msg,
+    'voice'           : MsgProcessor.voice_msg,
     'share'           : MsgProcessor.share_link_msg,
     'location'        : MsgProcessor.location_msg,
     'other'           : MsgProcessor.other_msg,
@@ -186,6 +187,8 @@ class CuteCatChannel(SlaveChannel):
             efb_msgs.append(efb_msg) if efb_msg else efb_msgs
         elif msg['type'] in ['miniprogram' , 'voip']:
             efb_msgs.append(TYPE_HANDLERS['unsupported'](msg))
+        elif msg['type'] in ['voice']:
+            efb_msgs.append(TYPE_HANDLERS['voice'](msg , chat))
         else:
             msg['msg'] = emoji_wechat2telegram(msg['msg'])
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))

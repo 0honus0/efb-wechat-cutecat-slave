@@ -294,11 +294,23 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
 
     return tuple(efb_msgs)
 
-def efb_location_wrapper(self, msg: str) -> Message:
+def efb_location_wrapper(msg: str) -> Message:
     efb_msg = Message()
     '''msg = ast.literal_eval(text)'''
     efb_msg.text = msg['desc']
     efb_msg.attributes = LocationAttribute(latitude=float(msg['x']),
                                            longitude=float(msg['y']))
     efb_msg.type = MsgType.Location
+    return efb_msg
+
+def efb_unsupported_wrapper( text : str) -> Message:
+    """
+    A simple EFB message wrapper for unsupported message
+    :param text: The content of the message
+    :return: EFB Message
+    """
+    efb_msg = Message(
+        type=MsgType.Unsupported,
+        text=text
+    )
     return efb_msg

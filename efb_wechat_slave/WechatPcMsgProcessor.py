@@ -2,9 +2,10 @@ import base64
 import tempfile
 import logging
 from .utils import download_file
-from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper
+from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper
 import re
-
+import pilk
+import pydub
 logger :logging.Logger = logging.getLogger(__name__)
 
 class MsgProcessor:
@@ -95,7 +96,7 @@ class MsgProcessor:
     def unsupported_msg(msg: dict):
         mag_type = {'miniprogram' : '小程序' , 'voip' : '语音聊天' , 'voip' : '语音/视频聊天'}
         msg['msg'] = '%s\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看' % mag_type[msg['type']]
-        return efb_text_simple_wrapper(msg['msg'])
+        return efb_unsupported_wrapper(msg['msg'])
     
     @staticmethod
     def revoke_msg(msg: dict):
@@ -109,3 +110,24 @@ class MsgProcessor:
         else:
             msg['msg'] = '「撤回了一条消息」 \n  - - - - - - - - - - - - - - - \n 不支持的消息类型'
         return efb_text_simple_wrapper(msg['msg'])
+
+    @staticmethod
+    def voice_msg( msg : dict , chat):
+        # if not VOICE_SUPPORTED:
+        #     msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
+        #     return efb_unsupported_wrapper(msg['msg'])
+        try:
+            input_file = download_file(msg['msg'])
+        except Exception as e:
+            logger.warning(f"Failed to download the voice! {e}")
+            msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
+            return efb_unsupported_wrapper(msg['msg'])
+        else:
+            f = tempfile.NamedTemporaryFile()
+            if not pilk.decode(input_file.name, f.name):
+                msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
+                return efb_unsupported_wrapper(msg['msg'])
+            pydub.AudioSegment.from_raw(file= f , sample_width=2, frame_rate=24000, channels=1) \
+                .export( f , format="ogg", codec="libopus",
+                        parameters=['-vbr', 'on'])
+            return efb_file_wrapper(f , filename= url.split('/')[-1])

@@ -29,7 +29,9 @@ setup(
         "requests",
         "python-magic",
         "lxml",
-        "emoji"
+        "emoji",
+        "pilk",
+        "pydub",
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
