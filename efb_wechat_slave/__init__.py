@@ -277,10 +277,9 @@ class CuteCatChannel(SlaveChannel):
             pass
 
         if msg.type in [MsgType.Text , MsgType.Link]:
-            # todo send emoji 
-            # temp_msg=emoji_telegram2wechat(msg.text)
-            # self.bot.SendTextMsg( to_wxid=chat_uid , msg=temp_msg)
-            self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
+            temp_msg=emoji_telegram2wechat(msg.text)
+            self.bot.SendTextMsg( to_wxid=chat_uid , msg=temp_msg)
+            #self.bot.SendTextMsg( to_wxid=chat_uid , msg=msg.text)
         elif msg.type in [MsgType.Image , MsgType.Sticker]:
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
         elif msg.type in [MsgType.File]:
