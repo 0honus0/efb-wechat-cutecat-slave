@@ -52,8 +52,9 @@ class CuteCatChannel(SlaveChannel):
     __version__ = version.__version__
     logger: logging.Logger = logging.getLogger("plugins.%s.CuteCatiHttp" % channel_id)
     handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter('%(asctime)s  %(filename)s : %(levelname)s  %(message)s'))
     logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image, MsgType.Video,
                                 MsgType.File, MsgType.Link, MsgType.Voice, MsgType.Animation}
