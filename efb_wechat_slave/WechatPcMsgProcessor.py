@@ -133,7 +133,7 @@ class MsgProcessor:
                 pydub.AudioSegment.from_raw(file= f , sample_width=2, frame_rate=24000, channels=1) \
                     .export( f , format="ogg", codec="libopus",
                             parameters=['-vbr', 'on'])
-                return efb_file_wrapper(f , filename= f.name + '.ogg')
+                return efb_voice_wrapper(f , filename= f.name + '.ogg')
             msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
             return efb_unsupported_wrapper(msg['msg'])
             
