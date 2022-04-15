@@ -33,14 +33,14 @@ def download_file(url: str, retry: int = 3) -> tempfile:
     return file
 
 def emoji_telegram2wechat(msg):
-    text = msg
+    text = str(msg)
     emojiList = Emoji.get_emoji_regexp().findall(text)
     for emoji in emojiList:
         text = text.replace(emoji, '[@emoji=' + json.dumps(emoji).strip("\"") + ']')
     return text
 
 def emoji_wechat2telegram(msg):
-    text = msg
+    text = str(msg)
     emojiList = re.findall(r'(?<=\[@emoji=)[\\0-9A-Za-z]*(?=\])', text)
     for emoji in emojiList:
         # 将 "\\ud83d\\ude4b" 转为 Unicode 表情
