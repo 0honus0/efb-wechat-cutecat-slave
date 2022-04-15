@@ -314,3 +314,28 @@ def efb_unsupported_wrapper( text : str) -> Message:
         text=text
     )
     return efb_msg
+
+def efb_voice_wrapper(file: IO, filename: str = None, text: str = None) -> Message:
+    """
+    A EFB message wrapper for voices.
+    :param file: The file handle
+    :param filename: The actual filename
+    :param text: The attached text
+    :return: EFB Message
+    """
+    efb_msg = Message()
+    efb_msg.type = MsgType.Audio
+    efb_msg.file = file
+    mime = magic.from_file(efb_msg.file.name, mime=True)
+    if isinstance(mime, bytes):
+        mime = mime.decode()
+    if filename:
+        efb_msg.filename = filename
+    else:
+        efb_msg.filename = file.name
+        efb_msg.filename += '.' + str(mime).split('/')[1]  # Add extension suffix
+    efb_msg.path = efb_msg.file.name
+    efb_msg.mime = mime
+    if text:
+        efb_msg.text = text
+    return efb_msg
