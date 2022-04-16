@@ -186,7 +186,7 @@ class CuteCatChannel(SlaveChannel):
         elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement']:
             efb_msg = TYPE_HANDLERS[msg['type']](msg)
             efb_msgs.append(efb_msg) if efb_msg else efb_msgs
-        elif msg['type'] in ['miniprogram' , 'voip']:
+        elif msg['type'] in ['miniprogram' , 'voip' , 'card']:
             efb_msgs.append(TYPE_HANDLERS['unsupported'](msg))
         elif msg['type'] in ['voice']:
             efb_msgs.append(TYPE_HANDLERS['voice'](msg , chat))

@@ -92,15 +92,19 @@ class MsgProcessor:
             msg['msg'] = '客户端一致性检查'
         elif 'mmchatroombarannouncememt' in msg['msg']:
             return None
+        elif 'bizlivenotify' in msg['msg']:    #暂时处理，未确认
+            msg['msg'] = '收到直播通知'
         elif 'roomtoolstips' in msg['msg'] and '撤回' in msg['msg']:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n撤回了一个群代办'
         elif 'roomtoolstips' in msg['msg'] and '撤回' not in msg['msg']:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n发布一个群代办'
+        elif 'ShareExtensionSendImgResp' in msg['msg']:
+            msg['msg'] = '  - - - - - - - - - - - - - - - \n分享图片'
         return efb_text_simple_wrapper(msg['msg'])
 
     @staticmethod
     def unsupported_msg(msg: dict):
-        mag_type = {'miniprogram' : '小程序' , 'voip' : '语音聊天' , 'voip' : '语音/视频聊天'}
+        mag_type = {'miniprogram' : '小程序' , 'voip' : '语音聊天' , 'voip' : '语音/视频聊天' , 'card' : '卡片消息'}
         msg['msg'] = '%s\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看' % mag_type[msg['type']]
         return efb_unsupported_wrapper(msg['msg'])
     
@@ -119,9 +123,6 @@ class MsgProcessor:
 
     @staticmethod
     def voice_msg( msg : dict , chat):
-        # if not VOICE_SUPPORTED:
-        #     msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
-        #     return efb_unsupported_wrapper(msg['msg'])
         try:
             input_file = download_file(msg['msg'])
         except Exception as e:
@@ -135,11 +136,12 @@ class MsgProcessor:
             input_file.seek(0)
             if b"#!SILK_V3" in silk_header:
                 pilk.decode(input_file.name, f.name)
-                #todo close input file
+                input_file.close()
                 pydub.AudioSegment.from_raw(file= f , sample_width=2, frame_rate=24000, channels=1) \
                     .export( f , format="ogg", codec="libopus",
                             parameters=['-vbr', 'on'])
                 return efb_voice_wrapper(f , filename= f.name + '.ogg')
+            input_file.close()
             msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
             return efb_unsupported_wrapper(msg['msg'])
             
