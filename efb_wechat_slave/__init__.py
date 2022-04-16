@@ -27,16 +27,17 @@ from .WechatPcMsgProcessor import MsgProcessor
 from .utils import download_file , emoji_telegram2wechat , emoji_wechat2telegram
 
 TYPE_HANDLERS = {
-    'text'            : MsgProcessor.text_msg,
-    'image'           : MsgProcessor.image_msg,
-    'video'           : MsgProcessor.video_msg,
-    'voice'           : MsgProcessor.voice_msg,
-    'share'           : MsgProcessor.share_link_msg,
-    'location'        : MsgProcessor.location_msg,
-    'other'           : MsgProcessor.other_msg,
-    'animatedsticker' : MsgProcessor.image_msg,
-    'unsupported'     : MsgProcessor.unsupported_msg,
-    'revokemsg'       : MsgProcessor.revoke_msg,
+    'text'              : MsgProcessor.text_msg,
+    'image'             : MsgProcessor.image_msg,
+    'video'             : MsgProcessor.video_msg,
+    'voice'             : MsgProcessor.voice_msg,
+    'share'             : MsgProcessor.share_link_msg,
+    'location'          : MsgProcessor.location_msg,
+    'other'             : MsgProcessor.other_msg,
+    'animatedsticker'   : MsgProcessor.image_msg,
+    'unsupported'       : MsgProcessor.unsupported_msg,
+    'revokemsg'         : MsgProcessor.revoke_msg,
+    'groupannouncement' : MsgProcessor.group_announcement_msg,
 }
 
 class CuteCatChannel(SlaveChannel):
@@ -182,7 +183,7 @@ class CuteCatChannel(SlaveChannel):
                 efb_msgs.append(MsgProcessor.file_msg(msg))
             else:
                 efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
-        elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker' , 'other' , 'revokemsg']:
+        elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement']:
             efb_msg = TYPE_HANDLERS[msg['type']](msg)
             efb_msgs.append(efb_msg) if efb_msg else efb_msgs
         elif msg['type'] in ['miniprogram' , 'voip']:

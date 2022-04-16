@@ -90,6 +90,12 @@ class MsgProcessor:
             return None
         elif 'ClientCheckConsistency' in msg['msg']:
             msg['msg'] = '客户端一致性检查'
+        elif 'mmchatroombarannouncememt' in msg['msg']:
+            return None
+        elif 'roomtoolstips' in msg['msg'] and '撤回' in msg['msg']:
+            msg['msg'] = '  - - - - - - - - - - - - - - - \n撤回了一个群代办'
+        elif 'roomtoolstips' in msg['msg'] and '撤回' not in msg['msg']:
+            msg['msg'] = '  - - - - - - - - - - - - - - - \n发布一个群代办'
         return efb_text_simple_wrapper(msg['msg'])
 
     @staticmethod
@@ -137,3 +143,7 @@ class MsgProcessor:
             msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
             return efb_unsupported_wrapper(msg['msg'])
             
+    @staticmethod
+    def group_announcement_msg( msg : dict ):
+        msg['msg'] = '「群公告」 \n  - - - - - - - - - - - - - - - \n ' + msg['msg']
+        return efb_text_simple_wrapper(msg['msg'])

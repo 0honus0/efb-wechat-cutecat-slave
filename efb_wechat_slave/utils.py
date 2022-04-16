@@ -45,6 +45,9 @@ def emoji_wechat2telegram(msg):
     for emoji in emojiList:
         # 将 "\\ud83d\\ude4b" 转为 Unicode 表情
         text = text.replace(f"[@emoji={emoji}]", emoji.encode('utf-8').decode("unicode-escape").encode('utf-16', 'surrogatepass').decode('utf-16'))
+    emojiList = re.findall('\[\w+\]' , text)
+    for emoji in emojiList:
+        text = text.replace(emoji, WC_EMOTICON_CONVERSION[emoji])
     return text
 
 WC_EMOTICON_CONVERSION = {
@@ -153,5 +156,22 @@ WC_EMOTICON_CONVERSION = {
     '[破涕为笑]': '😂', '[破涕為笑]': '😂',
     '[苦涩]': '😭',
     '[翻白眼]': '🙄',
-    '[裂开]': '🫠'
+    '[爆竹]': '🧨',
+    '[烟花]': '🎆',
+    '[裂开]': '[裂开]',
+    '[福]': '🧧',
+    '[發]': '🀅',
+    '[礼物]': '🎁',
+    '[庆祝]': '🎉',
+    '[合十]': '🙏',
+    '[叹气]': '😮‍💨',
+    '[让我看看]': '👀',
+    '[666]': '6️⃣6️⃣6️⃣',
+    '[无语]': '😑',
+    '[失望]': '😞',
+    '[恐惧]': '😨',
+    '[脸红]': '😳',
+    '[生病]': '😷',
+    '[笑脸]': '😁',
+    
 }

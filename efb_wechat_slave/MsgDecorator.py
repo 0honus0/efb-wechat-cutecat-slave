@@ -1,6 +1,7 @@
 from typing import Mapping, Tuple, Union, IO
 import magic
 from lxml import etree
+from lxml.etree import CDATA as cdata
 from traceback import print_exc
 
 from ehforwarderbot import MsgType, Chat
@@ -116,14 +117,15 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     //appmsg/type = 3 : 音乐分享
     //appmsg/type = 4 : 至少包含小红书分享
     //appmsg/type = 5 : 链接（公众号文章）
-    //appmsg/type = 8 : 掷色子 或者 猜拳消息
+    //appmsg/type = 6 : 文件 （收到文件的第二个提示【文件下载完成】)，也有可能 msgType = 10000 【【提示文件有风险】没有任何有用标识，无法判断是否与前面哪条消息有关联】
+    //appmsg/type = 8 : 未解析图片消息
     //appmsg/type = 17 : 实时位置共享
     //appmsg/type = 19 : 合并转发的聊天记录
     //appmsg/type = 21 : 微信运动
     //appmsg/type = 51 : 微信视频号分享
-    //appmsg/type = 74 : 文件 (收到文件的第一个提示)
-    //appmsg/type = 6 : 文件 （收到文件的第二个提示【文件下载完成】)，也有可能 msgType = 10000 【【提示文件有风险】没有任何有用标识，无法判断是否与前面哪条消息有关联】
     //appmsg/type = 57 : 【感谢 @honus 提供样本 xml】引用(回复)消息，未细致研究哪个参数是被引用的消息 id 
+    //appmsg/type = 63 : 视频号
+    //appmsg/type = 74 : 文件 (收到文件的第一个提示)
     :param text: The content of the message
     :return: EFB Message
     """
@@ -141,7 +143,6 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 efb_msg = Message(
                     type = MsgType.Text,
                     text = "- - - - - - - - - - - - - - - \n无效的音乐分享",
-                    vendor_specific={ "is_forwarded": True }
                 )
             try:
                 thumb_url = xml.xpath('/msg/appmsg/url/text()')[0]
@@ -229,10 +230,9 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                         )
                         efb_msgs.append(efb_msg)
         elif type == 8:
-            # SendOutMsg 触发, 异为系统消息推送
             efb_msg = Message(
                 type=MsgType.Text,
-                text='掷色子 或者 猜拳消息，请在手机端查看',
+                text='未解密表情消息 ，请在手机端查看',
             )
             efb_msgs.append(efb_msg)
         elif type == 19: # 合并转发的聊天记录
@@ -280,6 +280,12 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 type=MsgType.Text,
                 text=result_text,
                 vendor_specific={ "is_refer": True }
+            )
+            efb_msgs.append(efb_msg)
+        elif type == 63: #视频号消息
+            efb_msg = Message(
+                type = MsgType.Text,
+                text = "- - - - - - - - - - - - - - - \n视频号消息，请在手机端查看",
             )
             efb_msgs.append(efb_msg)
     except Exception as e:
