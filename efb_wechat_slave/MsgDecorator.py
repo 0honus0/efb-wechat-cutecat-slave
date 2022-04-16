@@ -123,9 +123,9 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     //appmsg/type = 19 : 合并转发的聊天记录
     //appmsg/type = 21 : 微信运动
     //appmsg/type = 36 : 京东农场
-    //appmsg/type = 51 : 微信视频号分享
+    //appmsg/type = 51 : 视频（微信视频号分享）
     //appmsg/type = 57 : 【感谢 @honus 提供样本 xml】引用(回复)消息，未细致研究哪个参数是被引用的消息 id 
-    //appmsg/type = 63 : 直播视频号
+    //appmsg/type = 63 : 直播（微信视频号）
     //appmsg/type = 74 : 文件 (收到文件的第一个提示)
     :param text: The content of the message
     :return: EFB Message
@@ -307,9 +307,11 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             )
             efb_msgs.append(efb_msg)
         elif type == 63: #视频号消息
+            imgurl = xml.xpath('/msg/appmsg/finderLive/headUrl/text()')[0].strip("<![CDATA[").strip("]]>")
+            desc = xml.xpath('/msg/appmsg/finderLive/desc/text()')[0].strip("<![CDATA[").strip("]]>")
             efb_msg = Message(
-                type = MsgType.Unsupported,
-                text = "视频号消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看",
+                type = MsgType.Text,
+                text = "视频号消息\n  - - - - - - - - - - - - - - - \n"+desc+"\n不支持的消息类型, 请在微信端查看\n"+imgurl,
             )
             efb_msgs.append(efb_msg)
     except Exception as e:
