@@ -123,6 +123,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     //appmsg/type = 17 : 实时位置共享
     //appmsg/type = 19 : 合并转发的聊天记录
     //appmsg/type = 21 : 微信运动
+    //appmsg/type = 24 : 从收藏中分享的笔记
     //appmsg/type = 36 : 京东农场
     //appmsg/type = 51 : 视频（微信视频号分享）
     //appmsg/type = 57 : 【感谢 @honus 提供样本 xml】引用(回复)消息，未细致研究哪个参数是被引用的消息 id 
@@ -290,6 +291,18 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                     vendor_specific={ "is_wechatsport": True }
                 )
                 efb_msgs.append(efb_msg)
+        elif type == 24:
+            desc = xml.xpath('/msg/appmsg/des/text()')[0]
+            recorditem = xml.xpath('/msg/appmsg/recorditem/text()')[0]
+            xml = etree.fromstring(recorditem)
+            datadesc = xml.xpath('/recordinfo/datalist/dataitem/datadesc/text()')[0]
+            efb_msg = Message(
+                type=MsgType.Text,
+                text= '微信笔记 :\n  - - - - - - - - - - - - - - - \n' +desc + '\n' + datadesc,
+                vendor_specific={ "is_mp": True }
+            )
+            efb_msgs.append(efb_msg)
+
         elif type == 40: # 转发的转发消息
             title = xml.xpath('/msg/appmsg/title/text()')[0]
             desc = xml.xpath('/msg/appmsg/des/text()')[0]

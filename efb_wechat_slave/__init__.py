@@ -19,6 +19,7 @@ from ehforwarderbot.types import MessageID, ChatID, InstanceID
 from ehforwarderbot import utils as efb_utils
 from ehforwarderbot.exceptions import EFBException
 from cachetools import TTLCache
+from ehforwarderbot.message import MessageCommand, MessageCommands
 
 from .ChatMgr import ChatMgr
 from .CustomTypes import EFBGroupChat, EFBPrivateChat, EFBGroupMember
@@ -148,12 +149,32 @@ class CuteCatChannel(SlaveChannel):
             modifier_nickname = msg['msg']["modifier_nickname"]
             old_group_name = msg['msg']['old_group_name']
             new_group_name = msg['msg']['new_group_name']
-            msg['msg'] = f"\"{modifier_nickname}\" 修改了群名 \"{old_group_name}\" 为 \"{new_group_name}\""
-            self.deliver_alert_to_master( message = msg['msg'] , uid = self.robot_wxid)
+            content = {}
+            content['message'] = f"\"{modifier_nickname}\" 修改了群名 \"{old_group_name}\" 为 \"{new_group_name}\""
+            self.deliver_alert_to_master( content = content , uid = group_wxid , name = '\u2139 群组通知')
 
         @self.bot.on('EventFriendVerify')
         def on_friend_verify(msg : Dict[str, Any]):
             self.logger.debug(msg)
+            content = {}
+            name = "\u2139 好友请求"
+            uid = "friend_request"
+            text = (
+                f"\"{msg['final_from_name']}\" 想要添加你为好友!\n"
+                "验证消息为 :\n"
+                f"{msg['msg']['from_content']}"
+            )
+            content["message"] = text
+            commands = [
+                MessageCommand(
+                    name=("Accept"),
+                    callable_name="process_friend_request",
+                    kwargs={'msg' : msg['msg']},
+                )
+            ]
+            content["commands"] = commands
+            self.deliver_alert_to_master(content = content , uid = uid , name = name)
+            
 
         @self.bot.on('EventScanCashMoney')
         def on_scan_cash_money(msg : Dict[str, Any]):
@@ -166,7 +187,9 @@ class CuteCatChannel(SlaveChannel):
 
             if not name:
                 #发送两次因为iHttp插件发送两次
-                self.deliver_alert_to_master( message = f"{msg['msg']['scene_desc']} 收款金额 : {msg['msg']['money']} 元" , uid = self.robot_wxid)
+                content = {}
+                content['message'] = f"{msg['msg']['scene_desc']} 收款金额 : {msg['msg']['money']} 元"
+                self.deliver_alert_to_master( content = content  , uid = 'scan_cash_money' , name = '\u2139 收款')
             else:
                 chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
                         uid= wxid,
@@ -210,7 +233,6 @@ class CuteCatChannel(SlaveChannel):
             author = chat.other
             self.handle_msg( msg = msg , author = author , chat = chat)
 
-
     #处理消息
     def handle_msg(self , msg : Dict[str, Any] , author : 'ChatMember' , chat : 'Chat'):
         efb_msgs = []
@@ -219,7 +241,11 @@ class CuteCatChannel(SlaveChannel):
             if '/WeChat/savefiles/' in msg['msg']:
                 efb_msgs.append(MsgProcessor.file_msg(msg))
             else:
-                efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
+                efb_msgs = TYPE_HANDLERS[msg['type']](msg)
+                if not efb_msgs:
+                    return
+                else:
+                    efb_msgs = tuple(efb_msgs)
         elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement' , 'eventnotify' , 'transfer']:
             efb_msg = TYPE_HANDLERS[msg['type']](msg)
             efb_msgs.append(efb_msg) if efb_msg else efb_msgs
@@ -239,16 +265,26 @@ class CuteCatChannel(SlaveChannel):
             if efb_msg.file:
                 efb_msg.file.close()
 
-    # 警告信息
-    def deliver_alert_to_master(self, message: str , uid : str = 'System'):
+    #警告信息
+    def deliver_alert_to_master(self, uid : str = 'System', name : str = 'Alert' , content : dict = None , send_as_new : bool = False):
+        if send_as_new:
+            uid = "uid_%s" % int(time.time())
+
         chat = {
             'uid': uid,
-            'name': 'Alert',
+            'name': name,
         }
-        self.send_msg_to_master(chat , message)
+        self.send_msg_to_master(chat , content)
 
-    def send_msg_to_master(self , chat , message):
-        self.logger.debug(repr(message))
+    def process_friend_request(self , msg : Dict[str, Any]):
+        data = self.bot.AgreeFriendVerify( msg = msg ) or {}
+        if data.get('code') >=0:
+            return 'Success'
+        else:
+            return 'Failed'
+
+    def send_msg_to_master(self , chat  , content : str):
+        self.logger.debug(repr(content))
         if not getattr(coordinator, "master", None):  # Master Channel not initialized
             raise Exception(context["message"])
         chat = ChatMgr.build_efb_chat_as_system_user(chat)
@@ -264,8 +300,10 @@ class CuteCatChannel(SlaveChannel):
             deliver_to=coordinator.master,
         )
 
-        if message:
-            msg.text = message
+        if "commands" in content:
+            msg.commands = MessageCommands(content["commands"])
+        if "message" in content:
+            msg.text = content['message']
         coordinator.send_message(msg)
 
     #定时检查可爱猫状态
@@ -274,7 +312,8 @@ class CuteCatChannel(SlaveChannel):
         interval = 1800
         res = self.bot.GetAppDir()
         if not res:
-            self.deliver_alert_to_master( message = '可爱猫已掉线，请检查设置')
+            content = {"message": "可爱猫已掉线，请检查设置"}
+            self.deliver_alert_to_master( content = content )
         if t_event is not None and not t_event.is_set():
             self.check_status_timer = threading.Timer(interval, self.check_status, [t_event])
             self.check_status_timer.start()
@@ -335,16 +374,18 @@ class CuteCatChannel(SlaveChannel):
             temp_msg=emoji_telegram2wechat(msg.text)
             self.bot.SendTextMsg( to_wxid=chat_uid , msg=temp_msg)
         elif msg.type in [MsgType.Image , MsgType.Sticker]:
-            data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg) or {}
+            data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg)
         elif msg.type in [MsgType.File]:
-            data = self.bot.SendFileMsg( to_wxid=chat_uid , msg = temp_msg) or {}
-        elif msg.type in [MsgType.Video , MsgType.Animation]:
-            data = self.bot.SendVideoMsg( to_wxid=chat_uid , msg = temp_msg) or {}
-
+            data = self.bot.SendFileMsg( to_wxid=chat_uid , msg = temp_msg)
+        elif msg.type in [MsgType.Video ]:
+            data = self.bot.SendVideoMsg( to_wxid=chat_uid , msg = temp_msg)
+        elif msg.type in [MsgType.Animation]:
+            data = self.bot.SendEmojiMsg( to_wxid=chat_uid , msg = temp_msg)
         if self.config.get('receive_self_msg',False):
             if msg.type in [MsgType.Video , MsgType.Animation , MsgType.Image , MsgType.Sticker , MsgType.File]:
-                temp_msg = ("%s Send Success" % msg.type) if data.get('code') >= 0 else ("%s Send Failed" % msg.type)
-                self.deliver_alert_to_master(message = temp_msg , uid = self.robot_wxid)
+                content = {}
+                content['message'] = ("%s Send Success" % msg.type) if data.get('code') >= 0 else ("%s Send Failed" % msg.type)
+                self.deliver_alert_to_master( content = content , uid = 'send_message_status' , name = '信息发送状态')
             return msg
         return msg
 
