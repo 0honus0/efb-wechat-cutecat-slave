@@ -247,7 +247,13 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                             text=result_text,
                             vendor_specific={ "is_mp": True }
                         )
-                        efb_msgs.append(efb_msg)
+                    else： # 解决银行通知的问题，没有url和cover。
+                        result_text += f"{title}\n  - - - - - - - - - - - - - - - \n{digest}"
+                        efb_msg = Message(
+                            type=MsgType.Text,
+                            text=result_text
+                        )
+                    efb_msgs.append(efb_msg)
         elif type == 8:
             efb_msg = Message(
                 type=MsgType.Unsupported,
@@ -290,8 +296,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             result_text += f"视频号视频分享\n  - - - - - - - - - - - - - - - \n{desc}\n{title}\n{imgurl}"
             efb_msg = Message(
                 type=MsgType.Text,
-                text=result_text,
-                vendor_specific={ "is_video": True }
+                text=result_text
             )
             efb_msgs.append(efb_msg)
         elif type == 57: # 引用（回复）消息
