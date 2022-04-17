@@ -274,7 +274,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             efb_msgs.append(efb_msg)
         elif type == 21: # 微信运动
             msg_title = xml.xpath('/msg/appmsg/title/text()')[0].strip("<![CDATA[夺得").strip("冠军]]>")
-            if '排名' not in msg_title:
+            if '排行' not in msg_title:
                 msg_title = msg_title.strip()
                 efb_msg = Message(
                     type=MsgType.Text,
