@@ -247,7 +247,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                             text=result_text,
                             vendor_specific={ "is_mp": True }
                         )
-                    else： # 解决银行通知的问题，没有url和cover。
+                    else: # 解决银行通知的问题，没有url和cover。
                         result_text += f"{title}\n  - - - - - - - - - - - - - - - \n{digest}"
                         efb_msg = Message(
                             type=MsgType.Text,
