@@ -142,7 +142,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             des = xml.xpath('/msg/appmsg/des/text()')[0]
             efb_msg = Message(
                 type = MsgType.Text,
-                text = "- - - - - - - - - - - - - - - \n" + title + " :\n" + des,
+                text = title + " :\n" + des,
             )
             efb_msgs.append(efb_msg)
         elif type == 3: #音乐分享
@@ -248,7 +248,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                             text=result_text,
                             vendor_specific={ "is_mp": True }
                         )
-                    else: # 解决银行通知的问题，没有url和cover。
+                    else: # 部分公众号通知没有url信息
                         result_text += f"{title}\n  - - - - - - - - - - - - - - - \n{digest}"
                         efb_msg = Message(
                             type=MsgType.Text,
@@ -283,7 +283,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             else:
                 rank = xml.xpath('/msg/appmsg/hardwareinfo/messagenodeinfo/rankinfo/rank/rankdisplay/text()')[0].strip("<![CDATA[").strip("]]>")
                 steps = xml.xpath('/msg/appmsg/hardwareinfo/messagenodeinfo/rankinfo/score/scoredisplay/text()')[0].strip("<![CDATA[").strip("]]>")
-                result_text += f"{msg_title}\n\n排名：{rank}\n步数：{steps}"
+                result_text += f"{msg_title}\n\n排名: {rank}\n步数: {steps}"
                 efb_msg = Message(
                     type=MsgType.Text,
                     text=result_text,
