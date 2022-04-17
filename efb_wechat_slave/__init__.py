@@ -37,7 +37,9 @@ TYPE_HANDLERS = {
     'animatedsticker'   : MsgProcessor.image_msg,
     'unsupported'       : MsgProcessor.unsupported_msg,
     'revokemsg'         : MsgProcessor.revoke_msg,
+    'transfer'          : MsgProcessor.transfer_msg,
     'groupannouncement' : MsgProcessor.group_announcement_msg,
+    'eventnotify'       : MsgProcessor.event_notify_msg,
 }
 
 class CuteCatChannel(SlaveChannel):
@@ -161,18 +163,58 @@ class CuteCatChannel(SlaveChannel):
         @self.bot.on('EventScanCashMoney')
         def on_scan_cash_money(msg : Dict[str, Any]):
             self.logger.debug(msg)
+            name = msg['final_from_name']
+            wxid = msg['final_from_wxid']
+            chat = None
+            auther = None
+            remark = self.get_friend_info('remark', wxid)
+
+            if not name:
+                #发送两次因为iHttp插件发送两次
+                self.deliver_alert_to_master( message = f"{msg['msg']['scene_desc']} 收款金额 : {msg['msg']['money']} 元" , uid = self.robot_wxid)
+            else:
+                chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
+                        uid= wxid,
+                        name= remark or name or wxid,
+                ))
+                author = chat.other
+                self.handle_msg( msg = msg , author = author , chat = chat)
+
             
-        @self.bot.on('EventGroupMemberAdd')
-        def on_group_member_add(msg : Dict[str, Any]):
+        @self.bot.on('EventGroupMemberAdd' , 'EventGroupMemberDecrease')
+        def on_group_member_change(msg : Dict[str, Any]):
             self.logger.debug(msg)
+            group_wxid = msg['msg']['group_wxid']
+            group_name = msg['msg']['group_name']
+            chat = None
+            author = None
+            chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
+                    uid= group_wxid,
+                    name=group_name or group_wxid
+            ))
+            author = ChatMgr.build_efb_chat_as_member(chat, EFBGroupMember(
+                    name = group_name ,
+                    alias = None ,
+                    uid = group_wxid
+            ))
+            self.handle_msg( msg = msg , author = author , chat = chat)
             
-        @self.bot.on('EventGroupMemberDecrease')
-        def on_group_member_decrease(msg : Dict[str, Any]):
-            self.logger.debug(msg)
             
         @self.bot.on('EventReceivedTransfer')
         def on_received_transfer(msg : Dict[str, Any]):
             self.logger.debug(msg)
+            name = msg['final_from_name']
+            wxid = msg['final_from_wxid']
+            chat = None
+            auther = None
+            remark = self.get_friend_info('remark', wxid)
+            chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
+                    uid= wxid,
+                    name= remark or name or wxid,
+            ))
+            author = chat.other
+            self.handle_msg( msg = msg , author = author , chat = chat)
+
 
     #处理消息
     def handle_msg(self , msg : Dict[str, Any] , author : 'ChatMember' , chat : 'Chat'):
@@ -183,7 +225,7 @@ class CuteCatChannel(SlaveChannel):
                 efb_msgs.append(MsgProcessor.file_msg(msg))
             else:
                 efb_msgs = tuple(TYPE_HANDLERS[msg['type']](msg))
-        elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement']:
+        elif msg['type'] in ['video', 'image', 'location' , 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement' , 'eventnotify' , 'transfer']:
             efb_msg = TYPE_HANDLERS[msg['type']](msg)
             efb_msgs.append(efb_msg) if efb_msg else efb_msgs
         elif msg['type'] in ['miniprogram' , 'voip' , 'card']:

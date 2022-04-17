@@ -6,6 +6,8 @@ from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wra
 import re
 import pilk
 import pydub
+import json
+
 logger :logging.Logger = logging.getLogger(__name__)
 
 class MsgProcessor:
@@ -151,4 +153,19 @@ class MsgProcessor:
     @staticmethod
     def group_announcement_msg( msg : dict ):
         msg['msg'] = '「群公告」 \n  - - - - - - - - - - - - - - - \n ' + msg['msg']
+        return efb_text_simple_wrapper(msg['msg'])
+
+    @staticmethod
+    def event_notify_msg( msg : dict ):
+        if msg['event'] == 'EventGroupMemberAdd':
+            msg['msg'] = '「群成员增加」 \n  - - - - - - - - - - - - - - - \n "' + msg['msg']['guest']['nickname'] + '" 加入了群聊'
+        elif msg['event'] == 'EventGroupMemberDecrease':
+            msg['msg'] = '「群成员减少」 \n  - - - - - - - - - - - - - - - \n "' + msg['msg']['member_nickname'] + '" 离开了群聊'
+        elif msg['event'] == 'EventScanCashMoney':
+            msg['msg'] = msg['msg']['scene_desc']
+        return efb_text_simple_wrapper(msg['msg'])
+
+    @staticmethod
+    def transfer_msg( msg : dict ):
+        msg['msg'] = '「转账」 \n  - - - - - - - - - - - - - - - \n ' + json.loads(msg['money'])['money'] + ' 元'
         return efb_text_simple_wrapper(msg['msg'])
