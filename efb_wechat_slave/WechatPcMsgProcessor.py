@@ -1,7 +1,7 @@
 import base64
 import tempfile
 import logging
-from .utils import download_file
+from .utils import download_file , wechatimagedecode
 from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper , efb_voice_wrapper
 import re
 import pilk
@@ -70,6 +70,9 @@ class MsgProcessor:
             logger.warning(f"Failed to download the file! {e}")
             return efb_text_simple_wrapper("File received and download failed. Please check it on your phone.")
         else:
+            if 'dat' in url:
+                f = wechatimagedecode(f)
+                return efb_image_wrapper(f)
             return efb_file_wrapper(f , filename= url.split('/')[-1])
 
     @staticmethod

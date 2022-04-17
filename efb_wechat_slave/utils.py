@@ -53,6 +53,40 @@ def emoji_wechat2telegram(msg):
             pass
     return text
 
+def wechatimagedecode( file : tempfile) -> tempfile:
+    """
+    代码来源 https://github.com/zhangxiaoyang/WechatImageDecoder
+    """
+    def do_magic(header_code, buf):
+        return header_code ^ list(buf)[0] if buf else 0x00
+    
+    def decode(magic, buf):
+        return bytearray([b ^ magic for b in list(buf)])
+
+    def guess_encoding(buf):
+        headers = {
+            'jpg': (0xff, 0xd8),
+            'png': (0x89, 0x50),
+            'gif': (0x47, 0x49),
+        }
+        for encoding in headers:
+            header_code, check_code = headers[encoding] 
+            magic = do_magic(header_code, buf)
+            _, code = decode(magic, buf[:2])
+            if check_code == code:
+                return (encoding, magic)
+        return None
+
+    with open(file.name , 'rb') as f:
+        buf = bytearray(f.read())
+    file_type, magic = guess_encoding(buf)
+
+    ret_file = tempfile.NamedTemporaryFile()
+    with open(ret_file.name , 'wb') as f:
+        f.write(decode(magic, buf))
+    file.close()
+    return ret_file
+
 WC_EMOTICON_CONVERSION = {
     '[微笑]': '😃', '[Smile]': '😃',
     '[撇嘴]': '😖', '[Grimace]': '😖',
