@@ -47,7 +47,10 @@ def emoji_wechat2telegram(msg):
         text = text.replace(f"[@emoji={emoji}]", emoji.encode('utf-8').decode("unicode-escape").encode('utf-16', 'surrogatepass').decode('utf-16'))
     emojiList = re.findall('\[\w+\]' , text)
     for emoji in emojiList:
-        text = text.replace(emoji, WC_EMOTICON_CONVERSION[emoji])
+        try:
+            text = text.replace(emoji, WC_EMOTICON_CONVERSION[emoji])
+        except:
+            pass
     return text
 
 WC_EMOTICON_CONVERSION = {

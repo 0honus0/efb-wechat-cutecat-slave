@@ -7,6 +7,7 @@ from ehforwarderbot import MsgType, Chat
 from ehforwarderbot.chat import ChatMember
 from ehforwarderbot.message import Substitutions, Message, LinkAttribute, LocationAttribute
 
+from .utils import emoji_wechat2telegram
 
 def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union[Chat, ChatMember]], None] = None) -> Message:
     """
@@ -257,10 +258,10 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
         elif type == 19: # 合并转发的聊天记录
             msg_title = xml.xpath('/msg/appmsg/title/text()')[0]
             forward_content = xml.xpath('/msg/appmsg/des/text()')[0]
-            result_text += f"{forward_content}\n\n{msg_title}"
+            result_text += f"{msg_title}\n\n{forward_content}"
             efb_msg = Message(
                 type=MsgType.Text,
-                text=result_text,
+                text= emoji_wechat2telegram(result_text),
                 vendor_specific={ "is_forwarded": True }
             )
             efb_msgs.append(efb_msg)
@@ -283,15 +284,32 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                     vendor_specific={ "is_wechatsport": True }
                 )
                 efb_msgs.append(efb_msg)
-        elif type == 51: # 微信视频号分享
+        elif type == 40: # 转发的转发消息
             title = xml.xpath('/msg/appmsg/title/text()')[0]
-            imgurl = xml.xpath('/msg/appmsg/finderFeed/avatar/text()')[0].strip("<![CDATA[").strip("]]>")
-            desc = xml.xpath('/msg/appmsg/finderFeed/desc/text()')[0]
-            result_text += f"视频号视频分享\n  - - - - - - - - - - - - - - - \n{desc}\n{title}\n{imgurl}"
+            desc = xml.xpath('/msg/appmsg/des/text()')[0]
             efb_msg = Message(
                 type=MsgType.Text,
+                text= f"{title}\n\n{desc}" ,
+                vendor_specific={ "is_forwarded": True }
+            )
+            efb_msgs.append(efb_msg)
+        elif type == 51: # 微信视频号分享
+            title = xml.xpath('/msg/appmsg/title/text()')[0]
+            url = xml.xpath('/msg/appmsg/url/text()')[0]
+            imgurl = xml.xpath('/msg/appmsg/finderFeed/avatar/text()')[0].strip("<![CDATA[").strip("]]>")
+            desc = xml.xpath('/msg/appmsg/finderFeed/desc/text()')[0]
+            result_text += f"微信视频号分享\n - - - - - - - - - - - - - - - \n"
+            attribute = LinkAttribute(
+                title=title,
+                description=  '\n' + desc,
+                url= url,
+                image= imgurl
+            )
+            efb_msg = Message(
+                attributes=attribute,
+                type=MsgType.Link,
                 text=result_text,
-                vendor_specific={ "is_video": True }
+                vendor_specific={ "is_mp": True }
             )
             efb_msgs.append(efb_msg)
         elif type == 57: # 引用（回复）消息
@@ -313,12 +331,21 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             efb_msgs.append(efb_msg)
         elif type == 63: #视频号消息
             title = xml.xpath('/msg/appmsg/title/text()')[0]
+            url = xml.xpath('/msg/appmsg/url/text()')[0]
             imgurl = xml.xpath('/msg/appmsg/finderLive/headUrl/text()')[0].strip("<![CDATA[").strip("]]>")
             desc = xml.xpath('/msg/appmsg/finderLive/desc/text()')[0].strip("<![CDATA[").strip("]]>")
-            result_text += f"视频号直播分享\n  - - - - - - - - - - - - - - - \n{desc}\n{title}\n{imgurl}"
+            result_text += f"视频号直播分享\n  - - - - - - - - - - - - - - - \n"
+            attribute = LinkAttribute(
+                title=title,
+                description= '\n' + desc ,
+                url= url,
+                image= imgurl
+            )
             efb_msg = Message(
-                type = MsgType.Text,
-                text = result_text
+                attributes=attribute,
+                type=MsgType.Link,
+                text=result_text,
+                vendor_specific={ "is_mp": True }
             )
             efb_msgs.append(efb_msg)
     except Exception as e:
