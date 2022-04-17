@@ -126,7 +126,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     //appmsg/type = 36 : 京东农场
     //appmsg/type = 51 : 视频（微信视频号分享）
     //appmsg/type = 57 : 【感谢 @honus 提供样本 xml】引用(回复)消息，未细致研究哪个参数是被引用的消息 id 
-    //appmsg/type = 63 : 直播（微信视频号）
+    //appmsg/type = 63 : 直播（微信视频号分享）
     //appmsg/type = 74 : 文件 (收到文件的第一个提示)
     :param text: The content of the message
     :return: EFB Message
@@ -248,7 +248,13 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                             text=result_text,
                             vendor_specific={ "is_mp": True }
                         )
-                        efb_msgs.append(efb_msg)
+                    else: # 解决银行通知的问题，没有url和cover。
+                        result_text += f"{title}\n  - - - - - - - - - - - - - - - \n{digest}"
+                        efb_msg = Message(
+                            type=MsgType.Text,
+                            text=result_text
+                        )
+                    efb_msgs.append(efb_msg)
         elif type == 8:
             efb_msg = Message(
                 type=MsgType.Unsupported,
@@ -293,7 +299,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 vendor_specific={ "is_forwarded": True }
             )
             efb_msgs.append(efb_msg)
-        elif type == 51: # 微信视频号分享
+        elif type == 51: # 视频（微信视频号分享）
             title = xml.xpath('/msg/appmsg/title/text()')[0]
             url = xml.xpath('/msg/appmsg/url/text()')[0]
             imgurl = xml.xpath('/msg/appmsg/finderFeed/avatar/text()')[0].strip("<![CDATA[").strip("]]>")
@@ -329,7 +335,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 vendor_specific={ "is_refer": True }
             )
             efb_msgs.append(efb_msg)
-        elif type == 63: #视频号消息
+        elif type == 63: # 直播（微信视频号分享）
             title = xml.xpath('/msg/appmsg/title/text()')[0]
             url = xml.xpath('/msg/appmsg/url/text()')[0]
             imgurl = xml.xpath('/msg/appmsg/finderLive/headUrl/text()')[0].strip("<![CDATA[").strip("]]>")
