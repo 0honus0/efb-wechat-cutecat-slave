@@ -2,7 +2,7 @@ import base64
 import tempfile
 import logging
 from .utils import download_file , wechatimagedecode
-from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper , efb_voice_wrapper
+from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper , efb_voice_wrapper , efb_qqmail_wrapper
 import re
 import pilk
 import pydub
@@ -90,6 +90,11 @@ class MsgProcessor:
     @staticmethod
     def location_msg(msg: dict):
         return efb_location_wrapper(self, msg['msg'])
+    
+    @staticmethod
+    def qqmail_msg(msg: dict):
+        return efb_qqmail_wrapper(self, msg['msg'])
+    
     
     @staticmethod
     def other_msg(msg: dict):
