@@ -238,12 +238,16 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                         cover = item.find("cover").text
                     except Exception as e:
                         print_exc()
-                    if title is not None and url is not None:
+                    
+                    if '@app' in text:
+                        name = xml.xpath('//publisher/nickname/text()')[0]
+                        digest += f"\n---- from {name}"
+                    if (title is not None) and (url is not None):
                         attribute = LinkAttribute(
                             title=title,
                             description=digest,
                             url=url,
-                            image=cover
+                            image= cover if cover else None,
                         )
                         efb_msg = Message(
                             attributes=attribute,
@@ -400,10 +404,18 @@ def efb_qqmail_wrapper(text: str) -> Message:
     digest = xml.xpath('/msg/pushmail/content/digest/text()')[0].strip("<![CDATA[").strip("]]>")
     addr = xml.xpath('/msg/pushmail/content/fromlist/item/addr/text()')[0]
     datereceive = xml.xpath('/msg/pushmail/content/date/text()')[0].strip("<![CDATA[").strip("]]>")
-    result_text = f"主题：{subject}\nfrom：{sender}\n地址：{addr}\n收信时间：{datereceive}\n内容：{digest}"
+    result_text = f"主题：{subject}\nfrom: {sender}\n收信时间: {datereceive}\n内容: {digest}"
+    attribute = LinkAttribute(
+        title= f'地址: {addr}',
+        description= result_text,
+        url= f"mailto:{addr}",
+        image= None
+    )
     efb_msg = Message(
-        type=MsgType.Text,
-        text= emoji_wechat2telegram(result_text)
+        attributes=attribute,
+        type=MsgType.Link,
+        text=None,
+        vendor_specific={ "is_mp": False }
     )
     return efb_msg
 
