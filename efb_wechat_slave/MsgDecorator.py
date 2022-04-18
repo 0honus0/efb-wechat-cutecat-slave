@@ -397,8 +397,8 @@ def efb_qqmail_wrapper(text: str) -> Message:
         subject = subjectwithCDATA[0].strip("<![CDATA[").strip("]]>")
     digest = xml.xpath('/msg/pushmail/content/digest/text()')[0].strip("<![CDATA[").strip("]]>")
     addr = xml.xpath('/msg/pushmail/content/fromlist/item/name/text()')[0].strip("<![CDATA[").strip("]]>")
-    datereceive = ml.xpath('/msg/pushmail/content/date/text()')[0].strip("<![CDATA[").strip("]]>")
-    result_text = f"主题：{subject}\nfrom：{sender}\n地址：{addr}\n内容：{digest}"
+    datereceive = xml.xpath('/msg/pushmail/content/date/text()')[0].strip("<![CDATA[").strip("]]>")
+    result_text = f"主题：{subject}\nfrom：{sender}\n地址：{addr}\n收信时间：{datereceive}\n内容：{digest}"
     efb_msg = Message(
         type=MsgType.Text,
         text= emoji_wechat2telegram(result_text)
