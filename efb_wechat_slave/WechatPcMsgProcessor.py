@@ -81,7 +81,7 @@ class MsgProcessor:
     def share_link_msg(msg: dict):
         try:
             type = re.search('<type>(\d+)<\/type>' , msg['msg']).group(1)
-            if str(type) in ['8']:
+            if str(type) in ['8'] and msg['type'] == 'SendOutMsg':
                 return
         except:
             pass
