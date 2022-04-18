@@ -386,7 +386,7 @@ class CuteCatChannel(SlaveChannel):
             if msg.type in [MsgType.Video , MsgType.Animation , MsgType.Image , MsgType.Sticker , MsgType.File]:
                 content = {}
                 content['message'] = ("%s Send Success" % msg.type) if data.get('code') >= 0 else ("%s Send Failed" % msg.type)
-                self.deliver_alert_to_master( content = content , uid = 'send_message_status' , name = '信息发送状态')
+                self.deliver_alert_to_master( content = content , uid = self.robot_wxid)
             return msg
         return msg
 

@@ -206,9 +206,11 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                         app = xml.xpath('/msg/appinfo/appname/text()')[0]
                         des = f"{des}\n---- from {app}"
 
-                    sourceusername = xml.xpath('/msg/appmsg/sourceusername/text()')[0]
-                    sourcedisplayname = xml.xpath('/msg/appmsg/sourcedisplayname/text()')[0]
-                    result_text += f"\n转发自公众号【{sourcedisplayname}(id: {sourceusername})】\n\n"
+                    result_text = None
+                    if len(xml.xpath('/msg/appmsg/sourceusername/text()'))!=0:
+                        sourceusername = xml.xpath('/msg/appmsg/sourceusername/text()')[0]
+                        sourcedisplayname = xml.xpath('/msg/appmsg/sourcedisplayname/text()')[0]
+                        result_text += f"\n转发自公众号【{sourcedisplayname}(id: {sourceusername})】\n\n"
                 except Exception as e:
                     print_exc()
                 if title is not None and url is not None:
