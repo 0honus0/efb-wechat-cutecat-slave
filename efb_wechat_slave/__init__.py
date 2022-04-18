@@ -116,10 +116,17 @@ class CuteCatChannel(SlaveChannel):
             group_nick_name = self.get_group_member_nameinfo('group_nickname', group_wxid , userwxid)
             chat = None
             author = None
-            chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
-                    uid= group_wxid,
-                    name=group_name or group_wxid
-            ))
+
+            if '@app' in group_wxid:
+                chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
+                    uid = 'wechat_applet_notification',
+                    name = '微信小程序通知'
+                ))
+            else:
+                chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
+                        uid= group_wxid,
+                        name=group_name or group_wxid
+                ))
             remark = self.get_friend_info('remark', userwxid)
             author = ChatMgr.build_efb_chat_as_member(chat, EFBGroupMember(
                     name = remark or username ,

@@ -238,12 +238,16 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                         cover = item.find("cover").text
                     except Exception as e:
                         print_exc()
-                    if title is not None and url is not None:
+                    
+                    if '@app' in text:
+                        name = xml.xpath('//publisher/nickname/text()')[0]
+                        digest += f"\n---- from {name}"
+                    if (title is not None) and (url is not None):
                         attribute = LinkAttribute(
                             title=title,
                             description=digest,
                             url=url,
-                            image=cover
+                            image= cover if cover else None,
                         )
                         efb_msg = Message(
                             attributes=attribute,
