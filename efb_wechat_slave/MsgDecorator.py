@@ -388,23 +388,6 @@ def efb_location_wrapper(msg: str) -> Message:
     efb_msg.type = MsgType.Location
     return efb_msg
 
-def efb_qqmail_wrapper(text: str) -> Message:
-    xml = etree.fromstring(text)
-    result_text = ""
-    sander = xml.xpath('/msg/pushmail/content/sander/text()')[0].strip("<![CDATA[").strip("]]>")
-    subjectwithCDATA = xml.xpath('/msg/pushmail/content/subject/text()')
-    if len(subjectwithCDATA) != 0:
-        subject = subjectwithCDATA[0].strip("<![CDATA[").strip("]]>")
-    digest = xml.xpath('/msg/pushmail/content/digest/text()')[0].strip("<![CDATA[").strip("]]>")
-    addr = xml.xpath('/msg/pushmail/content/fromlist/item/name/text()')[0].strip("<![CDATA[").strip("]]>")
-    datereceive = ml.xpath('/msg/pushmail/content/date/text()')[0].strip("<![CDATA[").strip("]]>")
-    result_text = f"主题：{subject}\nfrom：{sander}\n地址：{addr}\n内容：{digest}"
-    efb_msg = Message(
-        type=MsgType.Text,
-        text= emoji_wechat2telegram(result_text)
-    )
-    return efb_msg
-
 def efb_unsupported_wrapper( text : str) -> Message:
     """
     A simple EFB message wrapper for unsupported message
