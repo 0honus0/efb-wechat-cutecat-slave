@@ -93,7 +93,7 @@ class MsgProcessor:
     
     @staticmethod
     def qqmail_msg(msg: dict):
-        return efb_qqmail_wrapper(self, msg['msg'])
+        return efb_qqmail_wrapper(msg['msg'])
     
     
     @staticmethod
