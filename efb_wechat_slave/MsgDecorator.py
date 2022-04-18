@@ -400,10 +400,18 @@ def efb_qqmail_wrapper(text: str) -> Message:
     digest = xml.xpath('/msg/pushmail/content/digest/text()')[0].strip("<![CDATA[").strip("]]>")
     addr = xml.xpath('/msg/pushmail/content/fromlist/item/addr/text()')[0]
     datereceive = xml.xpath('/msg/pushmail/content/date/text()')[0].strip("<![CDATA[").strip("]]>")
-    result_text = f"主题：{subject}\nfrom：{sender}\n地址：{addr}\n收信时间：{datereceive}\n内容：{digest}"
+    result_text = f"主题：{subject}\nfrom: {sender}\n收信时间: {datereceive}\n内容: {digest}"
+    attribute = LinkAttribute(
+        title= f'地址: {addr}',
+        description= result_text,
+        url= f"mailto:{addr}",
+        image= None
+    )
     efb_msg = Message(
-        type=MsgType.Text,
-        text= emoji_wechat2telegram(result_text)
+        attributes=attribute,
+        type=MsgType.Link,
+        text=None,
+        vendor_specific={ "is_mp": False }
     )
     return efb_msg
 
