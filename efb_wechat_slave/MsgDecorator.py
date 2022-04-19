@@ -206,7 +206,6 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                         app = xml.xpath('/msg/appinfo/appname/text()')[0]
                         des = f"{des}\n---- from {app}"
 
-                    result_text = None
                     if len(xml.xpath('/msg/appmsg/sourceusername/text()'))!=0:
                         sourceusername = xml.xpath('/msg/appmsg/sourceusername/text()')[0]
                         sourcedisplayname = xml.xpath('/msg/appmsg/sourcedisplayname/text()')[0]
@@ -241,13 +240,13 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                     
                     if '@app' in text:
                         name = xml.xpath('//publisher/nickname/text()')[0]
-                        digest += f"\n---- from {name}"
-                    if (title is not None) and (url is not None):
+                        digest += f"\n- - - - from {name}"
+                    if title and url:
                         attribute = LinkAttribute(
                             title=title,
                             description=digest,
                             url=url,
-                            image= cover if cover else None,
+                            image= cover,
                         )
                         efb_msg = Message(
                             attributes=attribute,
