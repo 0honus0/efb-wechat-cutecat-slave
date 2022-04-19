@@ -42,7 +42,7 @@ TYPE_HANDLERS = {
     'transfer'          : MsgProcessor.transfer_msg,
     'groupannouncement' : MsgProcessor.group_announcement_msg,
     'eventnotify'       : MsgProcessor.event_notify_msg,
-    'miniprogram'       : MsgProcessor.event_miniprogram_msg
+    'miniprogram'       : MsgProcessor.miniprogram_msg
 }
 
 class CuteCatChannel(SlaveChannel):
