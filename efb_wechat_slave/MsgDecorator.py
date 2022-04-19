@@ -431,7 +431,7 @@ def efb_miniprogram_wrapper(text: str) -> Message:
     attribute = LinkAttribute(
         title= f'{title}',
         description= result_text,
-        url= None,
+        url= imgurl,
         image= imgurl
     )
     efb_msg = Message(
