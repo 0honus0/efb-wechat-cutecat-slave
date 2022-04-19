@@ -426,12 +426,12 @@ def efb_miniprogram_wrapper(text: str) -> Message:
     title = xml.xpath('/msg/appmsg/title/text()')[0]
     programname = xml.xpath('/msg/appmsg/sourcedisplayname/text()')[0]
     imgurl = xml.xpath('/msg/appmsg/weappinfo/weappiconurl/text()')[0].strip("<![CDATA[").strip("]]>")
-    
+    url = xml.xpath('/msg/appmsg/url/text()')[0]
     result_text = f"from: {programname}\n  - - - - - - - - - - - - - - - \n微信小程序信息"
     attribute = LinkAttribute(
         title= f'{title}',
         description= result_text,
-        url= imgurl,
+        url= url,
         image= imgurl
     )
     efb_msg = Message(
