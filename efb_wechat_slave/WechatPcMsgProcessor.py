@@ -81,7 +81,7 @@ class MsgProcessor:
     def share_link_msg(msg: dict):
         try:
             type = re.search('<type>(\d+)<\/type>' , msg['msg']).group(1)
-            if str(type) in ['8'] and msg['type'] == 'SendOutMsg':
+            if str(type) in ['8'] and msg['event'] == 'EventSendOutMsg':
                 return
         except:
             pass
@@ -116,7 +116,7 @@ class MsgProcessor:
         elif 'roomtoolstips' in msg['msg'] and '撤回' in msg['msg']:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n撤回了一个群代办'
         elif 'roomtoolstips' in msg['msg'] and '撤回' not in msg['msg']:
-            msg['msg'] = '  - - - - - - - - - - - - - - - \n发布一个群代办'
+            msg['msg'] = '  - - - - - - - - - - - - - - - \n发布/完成 了一个群代办'
         elif 'ShareExtensionSend' in msg['msg']:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n分享成功消息'
         return efb_text_simple_wrapper(msg['msg'])

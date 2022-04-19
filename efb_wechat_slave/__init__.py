@@ -109,7 +109,6 @@ class CuteCatChannel(SlaveChannel):
         @self.bot.on('EventGroupMsg')
         def on_group_msg(msg: Dict[str, Any]):
             self.logger.debug(msg)
-
             group_wxid = msg['from_wxid']
             group_name = msg['from_name']
             userwxid = msg['final_from_wxid'] or group_wxid
@@ -117,6 +116,9 @@ class CuteCatChannel(SlaveChannel):
             group_nick_name = self.get_group_member_nameinfo('group_nickname', group_wxid , userwxid)
             chat = None
             author = None
+
+            if not group_name:
+                group_name = self.get_group_member_info('nickname', group_wxid)
 
             if '@app' in group_wxid:
                 chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
@@ -382,12 +384,18 @@ class CuteCatChannel(SlaveChannel):
         if msg.type in [MsgType.Text , MsgType.Link]:
             temp_msg=emoji_telegram2wechat(msg.text)
             self.bot.SendTextMsg( to_wxid=chat_uid , msg=temp_msg)
-        elif msg.type in [MsgType.Image , MsgType.Sticker]:
+        elif msg.type in [MsgType.Sticker]:
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg)
+        elif msg.type in [MsgType.Image]:
+            data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg)
+            if msg.text:
+                self.bot.SendTextMsg( to_wxid=chat_uid , msg= msg.text)
         elif msg.type in [MsgType.File]:
             data = self.bot.SendFileMsg( to_wxid=chat_uid , msg = temp_msg)
         elif msg.type in [MsgType.Video ]:
             data = self.bot.SendVideoMsg( to_wxid=chat_uid , msg = temp_msg)
+            if msg.text:
+                self.bot.SendTextMsg( to_wxid=chat_uid , msg= msg.text)
         elif msg.type in [MsgType.Animation]:
             data = self.bot.SendEmojiMsg( to_wxid=chat_uid , msg = temp_msg)
         if self.config.get('receive_self_msg',False):

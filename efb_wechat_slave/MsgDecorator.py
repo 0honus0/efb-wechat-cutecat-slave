@@ -2,6 +2,7 @@ from typing import Mapping, Tuple, Union, IO
 import magic
 from lxml import etree
 from traceback import print_exc
+import re
 
 from ehforwarderbot import MsgType, Chat
 from ehforwarderbot.chat import ChatMember
@@ -197,6 +198,12 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 title = url = des = thumburl = None # 初始化
                 try:
                     title = xml.xpath('/msg/appmsg/title/text()')[0]
+                    print(title)
+                    if '<' in title and '>' in title:
+                        subs = re.findall('<[\s\S]+?>', title)
+                        print(subs)
+                        for sub in subs:
+                            title = title.replace(sub, '')
                     url = xml.xpath('/msg/appmsg/url/text()')[0]
                     if len(xml.xpath('/msg/appmsg/des/text()'))!=0:
                         des = xml.xpath('/msg/appmsg/des/text()')[0]
