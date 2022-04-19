@@ -42,6 +42,7 @@ TYPE_HANDLERS = {
     'transfer'          : MsgProcessor.transfer_msg,
     'groupannouncement' : MsgProcessor.group_announcement_msg,
     'eventnotify'       : MsgProcessor.event_notify_msg,
+    'miniprogram'       : MsgProcessor.miniprogram_msg
 }
 
 class CuteCatChannel(SlaveChannel):
@@ -254,10 +255,10 @@ class CuteCatChannel(SlaveChannel):
                     return
                 else:
                     efb_msgs = tuple(efb_msgs)
-        elif msg['type'] in ['video', 'image', 'location' , 'qqmail', 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement' , 'eventnotify' , 'transfer']:
+        elif msg['type'] in ['miniprogram', 'video', 'image', 'location' , 'qqmail', 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement' , 'eventnotify' , 'transfer']:
             efb_msg = TYPE_HANDLERS[msg['type']](msg)
             efb_msgs.append(efb_msg) if efb_msg else efb_msgs
-        elif msg['type'] in ['miniprogram' , 'voip' , 'card']:
+        elif msg['type'] in ['voip' , 'card']:
             efb_msgs.append(TYPE_HANDLERS['unsupported'](msg))
         elif msg['type'] in ['voice']:
             efb_msgs.append(TYPE_HANDLERS['voice'](msg , chat))

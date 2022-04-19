@@ -418,6 +418,30 @@ def efb_qqmail_wrapper(text: str) -> Message:
     )
     return efb_msg
 
+
+
+def efb_miniprogram_wrapper(text: str) -> Message:
+    xml = etree.fromstring(text)
+    result_text = ""
+    title = xml.xpath('/msg/appmsg/title/text()')[0]
+    programname = xml.xpath('/msg/appmsg/sourcedisplayname/text()')[0]
+    imgurl = xml.xpath('/msg/appmsg/weappinfo/weappiconurl/text()')[0].strip("<![CDATA[").strip("]]>")
+    url = xml.xpath('/msg/appmsg/url/text()')[0]
+    result_text = f"from: {programname}\n  - - - - - - - - - - - - - - - \n微信小程序信息"
+    attribute = LinkAttribute(
+        title= f'{title}',
+        description= result_text,
+        url= url,
+        image= imgurl
+    )
+    efb_msg = Message(
+        attributes=attribute,
+        type=MsgType.Link,
+        text=None,
+        vendor_specific={ "is_mp": False }
+    )
+    return efb_msg
+
 def efb_unsupported_wrapper( text : str) -> Message:
     """
     A simple EFB message wrapper for unsupported message
