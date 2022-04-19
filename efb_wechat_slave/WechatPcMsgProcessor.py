@@ -2,7 +2,7 @@ import base64
 import tempfile
 import logging
 from .utils import download_file , wechatimagedecode
-from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper , efb_voice_wrapper , efb_qqmail_wrapper
+from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper , efb_voice_wrapper , efb_qqmail_wrapper , efb_miniprogram_wrapper
 import re
 import pilk
 import pydub
@@ -95,6 +95,9 @@ class MsgProcessor:
     def qqmail_msg(msg: dict):
         return efb_qqmail_wrapper(msg['msg'])
     
+    @staticmethod
+    def miniprogram_msg(msg: dict):
+        return efb_miniprogram_wrapper(msg['content'])
     
     @staticmethod
     def other_msg(msg: dict):
@@ -120,7 +123,7 @@ class MsgProcessor:
 
     @staticmethod
     def unsupported_msg(msg: dict):
-        mag_type = {'miniprogram' : '小程序' , 'voip' : '语音聊天' , 'voip' : '语音/视频聊天' , 'card' : '卡片消息'}
+        mag_type = {'voip' : '语音/视频聊天' , 'card' : '卡片消息'}
         msg['msg'] = '%s\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看' % mag_type[msg['type']]
         return efb_unsupported_wrapper(msg['msg'])
     
