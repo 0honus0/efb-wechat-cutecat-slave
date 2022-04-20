@@ -105,7 +105,7 @@ class MsgProcessor:
             msg['msg'] = '收到/取消 群语音邀请'
         elif '<notifydata>' in msg['msg']:
             return None
-        elif '拍了拍' in msg['msg']:
+        elif '拍了拍' in msg['msg'] or 'tickled' in msg['msg']:
             return None
         elif 'ClientCheckConsistency' in msg['msg']:
             msg['msg'] = '客户端一致性检查'
