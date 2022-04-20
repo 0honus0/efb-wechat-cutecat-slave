@@ -123,7 +123,7 @@ class MsgProcessor:
 
     @staticmethod
     def unsupported_msg(msg: dict):
-        mag_type = {'voip' : '语音/视频聊天' , 'card' : '卡片消息'}
+        mag_type = {'voip' : '语音/视频聊天' , 'card' : '微信联系人名片分享'}
         msg['msg'] = '%s\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看' % mag_type[msg['type']]
         return efb_unsupported_wrapper(msg['msg'])
     
