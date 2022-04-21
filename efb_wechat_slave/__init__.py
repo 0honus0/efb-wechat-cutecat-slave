@@ -118,7 +118,7 @@ class CuteCatChannel(SlaveChannel):
             author = None
 
             if not group_name:
-                group_name = self.get_group_member_info('nickname', group_wxid)
+                group_name = self.get_group_member_info('nickname', group_wxid) or group_wxid
 
             if '@app' in group_wxid:
                 chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
@@ -525,6 +525,10 @@ class CuteCatChannel(SlaveChannel):
     def get_group_member_info(self , item ,member_wxid ):
         group_member_info = self.bot.GetGroupMemberInfo( member_wxid = member_wxid)
         if group_member_info:
+            if 'data' not in group_member_info:
+                return []
+            if item not in group_member_info['data']:
+                return []
             return group_member_info.get('data').get(item)
         else:
             return []
