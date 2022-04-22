@@ -1,0 +1,3 @@
+[ehforwarderbot.slave]
+honus.CuteCatiHttp = efb_wechat_slave:CuteCatChannel
+

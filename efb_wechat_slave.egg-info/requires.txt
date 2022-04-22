@@ -1,0 +1,10 @@
+PyYaml>=5.3
+cachetools
+ehforwarderbot
+emoji
+lxml
+pilk
+pydub
+python-CuteCat-iHttp
+python-magic
+requests
