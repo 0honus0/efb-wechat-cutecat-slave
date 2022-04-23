@@ -327,8 +327,14 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
         elif type == 51: # 视频（微信视频号分享）
             title = xml.xpath('/msg/appmsg/title/text()')[0]
             url = xml.xpath('/msg/appmsg/url/text()')[0]
-            imgurl = xml.xpath('/msg/appmsg/finderFeed/avatar/text()')[0].strip("<![CDATA[").strip("]]>")
-            desc = xml.xpath('/msg/appmsg/finderFeed/desc/text()')[0]
+            if len(xml.xpath('/msg/appmsg/finderFeed/avatar/text()'))!=0:
+                imgurl = xml.xpath('/msg/appmsg/finderFeed/avatar/text()')[0].strip("<![CDATA[").strip("]]>")
+            else:
+                imgurl = None
+            if len(xml.xpath('/msg/appmsg/finderFeed/desc/text()'))!=0:
+                desc = xml.xpath('/msg/appmsg/finderFeed/desc/text()')[0]
+            else:
+                desc = None
             result_text += f"微信视频号分享\n - - - - - - - - - - - - - - - \n"
             attribute = LinkAttribute(
                 title=title,

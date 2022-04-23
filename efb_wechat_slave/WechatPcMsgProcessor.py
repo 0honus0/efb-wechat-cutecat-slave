@@ -103,7 +103,7 @@ class MsgProcessor:
     def other_msg(msg: dict):
         if '<banner>' in msg['msg']:
             msg['msg'] = '收到/取消 群语音邀请'
-        elif '<notifydata>' in msg['msg']:
+        elif 'notifydata' in msg['msg']:
             return None
         elif '拍了拍' in msg['msg'] or 'tickled' in msg['msg']:
             return None
@@ -114,9 +114,9 @@ class MsgProcessor:
         elif 'bizlivenotify' in msg['msg']:    #暂时处理，未确认
             msg['msg'] = '收到直播通知'
         elif 'roomtoolstips' in msg['msg'] and '撤回' in msg['msg']:
-            msg['msg'] = '  - - - - - - - - - - - - - - - \n撤回了一个群代办'
+            msg['msg'] = '  - - - - - - - - - - - - - - - \n撤回了一个群待办'
         elif 'roomtoolstips' in msg['msg'] and '撤回' not in msg['msg']:
-            msg['msg'] = '  - - - - - - - - - - - - - - - \n发布/完成 了一个群代办'
+            msg['msg'] = '  - - - - - - - - - - - - - - - \n发布/完成 了一个群待办'
         elif 'ShareExtensionSend' in msg['msg']:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n分享成功消息'
         return efb_text_simple_wrapper(msg['msg'])

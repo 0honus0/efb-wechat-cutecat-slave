@@ -86,7 +86,7 @@ class CuteCatChannel(SlaveChannel):
 
             efb_msgs = []
             #只处理系统消息中的拍了拍消息
-            if msg['type'] == 'sysmsg' and '拍了拍' in msg['msg']:
+            if msg['type'] == 'sysmsg' and ('拍了拍' in msg['msg'] or 'tickled' in msg['msg']):
                 to_wxid = msg['to_wxid']
                 name = self.get_friend_info('nickname' , to_wxid)
                 remark = self.get_friend_info('remark' , to_wxid)
