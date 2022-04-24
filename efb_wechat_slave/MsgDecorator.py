@@ -115,6 +115,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     处理msgType49消息 - 复合xml, xml 中 //appmsg/type 指示具体消息类型.
     /msg/appmsg/type
     已知：
+    //appmsg/type = 1 : 至少包含百度网盘分享
     //appmsg/type = 2 : 微信运动
     //appmsg/type = 3 : 音乐分享
     //appmsg/type = 4 : 至少包含小红书分享
@@ -139,12 +140,12 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     result_text = ""
     try: 
         type = int(xml.xpath('/msg/appmsg/type/text()')[0])
-        if type == 2:
+        if type == [ 1 , 2 ]:
             title = xml.xpath('/msg/appmsg/title/text()')[0]
             des = xml.xpath('/msg/appmsg/des/text()')[0]
             efb_msg = Message(
                 type = MsgType.Text,
-                text = title + " :\n" + des,
+                text = title if title==des else title+" :\n"+des,
             )
             efb_msgs.append(efb_msg)
         elif type == 3: #音乐分享
