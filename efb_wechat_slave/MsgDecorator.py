@@ -140,7 +140,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     result_text = ""
     try: 
         type = int(xml.xpath('/msg/appmsg/type/text()')[0])
-        if type == [ 1 , 2 ]:
+        if type in [ 1 , 2 ]:
             title = xml.xpath('/msg/appmsg/title/text()')[0]
             des = xml.xpath('/msg/appmsg/des/text()')[0]
             efb_msg = Message(
