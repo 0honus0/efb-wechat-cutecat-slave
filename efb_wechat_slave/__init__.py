@@ -17,6 +17,7 @@ from . import __version__ as version
 from ehforwarderbot.channel import SlaveChannel
 from ehforwarderbot.types import MessageID, ChatID, InstanceID
 from ehforwarderbot import utils as efb_utils
+from ehforwarderbot.utils import extra
 from ehforwarderbot.exceptions import EFBException
 from cachetools import TTLCache
 from ehforwarderbot.message import MessageCommand, MessageCommands
