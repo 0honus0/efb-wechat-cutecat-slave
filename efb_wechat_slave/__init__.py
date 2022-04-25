@@ -410,6 +410,7 @@ class CuteCatChannel(SlaveChannel):
         wxid = chat.uid
         headimgurl = self.get_group_member_info('headimgurl' ,wxid)
         if headimgurl:
+            headimgurl = '/'.join(headimgurl.split('/')[:-1]) + '/0'
             return download_file(url = headimgurl)
         return None
 
