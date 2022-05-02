@@ -174,8 +174,7 @@ class MsgProcessor:
         if msg['event'] == 'EventGroupMemberAdd':
             new = msg['msg']['guest']['nickname']
             inviter = msg['msg']['inviter']['nickname']
-            groupname = msg['msg']['group_name'] if msg['msg']['group_name'] else msg['msg']['group_wxid']
-            msg['msg'] = f'「群成员增加」 \n  - - - - - - - - - - - - - - - \n{inviter} 邀请 {new} 加入了群聊 {groupname}'
+            msg['msg'] = f'「群成员增加」 \n  - - - - - - - - - - - - - - - \n{inviter} 邀请 {new} 加入了群聊'
         elif msg['event'] == 'EventGroupMemberDecrease':
             msg['msg'] = '「群成员减少」 \n  - - - - - - - - - - - - - - - \n "' + msg['msg']['member_nickname'] + '" 离开了群聊'
         elif msg['event'] == 'EventScanCashMoney':
