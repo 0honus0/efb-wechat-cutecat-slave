@@ -89,7 +89,7 @@ class MsgProcessor:
     
     @staticmethod
     def location_msg(msg: dict):
-        return efb_location_wrapper(self, msg['msg'])
+        return efb_location_wrapper(msg['msg'])
     
     @staticmethod
     def qqmail_msg(msg: dict):
