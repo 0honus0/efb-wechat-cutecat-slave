@@ -129,6 +129,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     //appmsg/type = 35 : 消息同步
     //appmsg/type = 36 : 京东农场
     //appmsg/type = 51 : 视频（微信视频号分享）
+    //appmsg/type = 53 : 转账过期退还通知
     //appmsg/type = 57 : 【感谢 @honus 提供样本 xml】引用(回复)消息，未细致研究哪个参数是被引用的消息 id 
     //appmsg/type = 63 : 直播（微信视频号分享）
     //appmsg/type = 74 : 文件 (收到文件的第一个提示)
