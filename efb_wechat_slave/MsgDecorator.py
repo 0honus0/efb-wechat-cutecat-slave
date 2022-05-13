@@ -126,6 +126,7 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
     //appmsg/type = 19 : 合并转发的聊天记录
     //appmsg/type = 21 : 微信运动
     //appmsg/type = 24 : 从收藏中分享的笔记
+    //appmsg/type = 35 : 消息同步
     //appmsg/type = 36 : 京东农场
     //appmsg/type = 51 : 视频（微信视频号分享）
     //appmsg/type = 57 : 【感谢 @honus 提供样本 xml】引用(回复)消息，未细致研究哪个参数是被引用的消息 id 
@@ -315,7 +316,13 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
                 vendor_specific={ "is_mp": True }
             )
             efb_msgs.append(efb_msg)
-
+        elif type == 35:
+            efb_msg = Message(
+                type=MsgType.Text,
+                text= '系统消息 : 消息同步',
+                vendor_specific={ "is_mp": False }
+            )
+            efb_msgs.append(efb_msg)
         elif type == 40: # 转发的转发消息
             title = xml.xpath('/msg/appmsg/title/text()')[0]
             desc = xml.xpath('/msg/appmsg/des/text()')[0]
