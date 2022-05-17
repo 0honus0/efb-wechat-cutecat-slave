@@ -37,7 +37,7 @@ def efb_text_delete_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union
     efb_msg = Message(
         type=MsgType.Text,
         text=text,
-        parse_mode='Markdown'
+        attributes={parse_mode='Markdown'}
     )
     return efb_msg
 
