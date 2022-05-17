@@ -26,6 +26,21 @@ def efb_text_simple_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union
         efb_msg.substitutions = Substitutions(ats)
     return efb_msg
 
+def efb_text_delete_wrapper(text: str, ats: Union[Mapping[Tuple[int, int], Union[Chat, ChatMember]], None] = None) -> Message:
+    """
+    A simple EFB message wrapper for plain text. Emojis are presented as is (plain text).
+    :param text: The content of the message
+    :param ats: The substitutions of at messages, must follow the Substitution format when not None
+                [[begin_index, end_index], {Chat or ChatMember}]
+    :return: EFB Message
+    """
+    efb_msg = Message(
+        type=MsgType.Text,
+        text=text,
+        parse_mode='Markdown'
+    )
+    return efb_msg
+
 
 def efb_image_wrapper(file: IO, filename: str = None, text: str = None) -> Message:
     """
