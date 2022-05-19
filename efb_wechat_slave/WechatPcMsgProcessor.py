@@ -119,6 +119,8 @@ class MsgProcessor:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n发布/完成 了一个群待办'
         elif 'ShareExtensionSend' in msg['msg']:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n分享成功消息'
+        elif 'ChatSync' in msg['msg']:
+            msg['msg'] = '  - - - - - - - - - - - - - - - \n系统消息 : 消息同步'
         return efb_text_simple_wrapper(msg['msg'])
 
     @staticmethod
