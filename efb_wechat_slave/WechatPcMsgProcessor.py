@@ -2,7 +2,7 @@ import base64
 import tempfile
 import logging
 from .utils import download_file , wechatimagedecode
-from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper , efb_voice_wrapper , efb_qqmail_wrapper , efb_miniprogram_wrapper
+from efb_wechat_slave.MsgDecorator import efb_text_simple_wrapper, efb_text_delete_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper , efb_voice_wrapper , efb_qqmail_wrapper , efb_miniprogram_wrapper
 import re
 import pilk
 import pydub
@@ -137,10 +137,10 @@ class MsgProcessor:
         except:
             msg_type = None
         if msg_type in ['1']:
-            msg['msg'] = '「撤回了一条消息」 \n  - - - - - - - - - - - - - - - \n ' + msg['msg']['revoked_msg']['content']
+            msg['msg'] = '「撤回了一条消息」 \n  - - - - - - - - - - - - - - - \n~' + msg['msg']['revoked_msg']['content']+'~'
         else:
-            msg['msg'] = '「撤回了一条消息」 \n  - - - - - - - - - - - - - - - \n 不支持的消息类型'
-        return efb_text_simple_wrapper(msg['msg'])
+            msg['msg'] = '「撤回了一条消息」 \n  - - - - - - - - - - - - - - - \n~不支持的消息类型~'
+        return efb_text_delete_wrapper(msg['msg'])
 
     @staticmethod
     def voice_msg( msg : dict , chat):
