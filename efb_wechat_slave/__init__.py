@@ -77,7 +77,7 @@ class CuteCatChannel(SlaveChannel):
         self.robot_wxid = self.config['robot_wxid']
         self.self_url = self.config['self_url']
         access_token = self.config.get('access_token',None)
-        self.bot = CuteCat(api_url = self.api_url, robot_wxid = self.robot_wxid, access_token = access_token)
+        self.bot = CuteCat(api_url = self.api_url, self_url = self.self_url, robot_wxid = self.robot_wxid, access_token = access_token)
         ChatMgr.slave_channel = self
 
         @self.bot.on('EventSendOutMsg')
