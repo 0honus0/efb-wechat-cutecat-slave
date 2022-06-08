@@ -18,7 +18,6 @@ from ehforwarderbot.channel import SlaveChannel
 from ehforwarderbot.types import MessageID, ChatID, InstanceID
 from ehforwarderbot import utils as efb_utils
 from ehforwarderbot.exceptions import EFBException
-from cachetools import TTLCache
 from ehforwarderbot.message import MessageCommand, MessageCommands
 
 from .ChatMgr import ChatMgr
@@ -52,9 +51,9 @@ class CuteCatChannel(SlaveChannel):
 
     config: Dict[str, Any] = {}
 
-    info_list = TTLCache(maxsize=2, ttl=600)
-    info_dict = TTLCache(maxsize=2, ttl=600)
-    group_member_info = TTLCache(maxsize= 1000 ,ttl=3600)
+    info_list = {}
+    info_dict = {}
+    group_member_info = {}
 
     __version__ = version.__version__
     logger: logging.Logger = logging.getLogger("plugins.%s.CuteCatiHttp" % channel_id)
@@ -116,9 +115,6 @@ class CuteCatChannel(SlaveChannel):
             group_nick_name = self.get_group_member_nameinfo('group_nickname', group_wxid , userwxid)
             chat = None
             author = None
-
-            if not group_name:
-                group_name = self.get_group_member_info('nickname', group_wxid) or group_wxid
 
             if '@app' in group_wxid:
                 chat = ChatMgr.build_efb_chat_as_group(EFBGroupChat(
@@ -329,6 +325,16 @@ class CuteCatChannel(SlaveChannel):
             self.check_status_timer = threading.Timer(interval, self.check_status, [t_event])
             self.check_status_timer.start()
 
+    def cron_update_task(self , t_event):
+        interval = 3600
+        self.update_friend_info()
+        for k in self.group_member_info:
+            print(k)
+            self.update_group_member_info(k)
+        if t_event is not None and not t_event.is_set():
+            self.cron_update_timer = threading.Timer(interval, self.cron_update_task, [t_event])
+            self.cron_update_timer.start()
+
     #从本地读取配置
     def load_config(self):
         """
@@ -418,6 +424,9 @@ class CuteCatChannel(SlaveChannel):
         timer = threading.Event()
         self.check_status(timer)
 
+        cron_timer = threading.Event()
+        self.cron_update_task(cron_timer)
+
         t = threading.Thread(target=self.bot.run)
         t.daemon = True
         t.start()
@@ -433,8 +442,6 @@ class CuteCatChannel(SlaveChannel):
 
     #更新好友信息
     def update_friend_info(self):
-        if 'chat' in self.info_list and 'friend' in self.info_list:
-            return
         self.info_dict['chat'] = {}
         self.info_dict['friend'] = {}
         self.logger.debug('Fetching friend list...')
@@ -525,29 +532,21 @@ class CuteCatChannel(SlaveChannel):
 
     def get_group_member_info(self , item ,member_wxid ):
         group_member_info = self.bot.GetGroupMemberInfo( member_wxid = member_wxid)
-        if group_member_info:
-            if 'data' not in group_member_info:
-                return []
-            if item not in group_member_info['data']:
-                return []
+        try:
             return group_member_info.get('data').get(item)
-        else:
-            return []
+        except:
+            return None
 
     def get_group_member_nameinfo(self , item : str ,  group_wxid : str , member_wxid : str ):
-        if self.group_member_info.get(group_wxid , None) == None:
-            self.group_member_info[group_wxid] = {}
+        if self.group_member_info.get(group_wxid) == None:
             self.update_group_member_info(group_wxid)
-        if self.group_member_info.get(group_wxid , None) == None:
-            return None
         if self.group_member_info[group_wxid].get(member_wxid , None) == None:
             return None
         return self.group_member_info[group_wxid][member_wxid][item] if self.group_member_info[group_wxid][member_wxid][item] else None
 
     def get_friend_info(self, item: str, wxid: str) -> Union[None, str]:
         if self.info_dict.get('friend', None) == None:
-            self.info_dict['friend'] = {}
-            self.update_friend_info()
+            return None
         if wxid not in self.info_dict['friend']:
             return None
         return self.info_dict['friend'][wxid].get(item, None)
