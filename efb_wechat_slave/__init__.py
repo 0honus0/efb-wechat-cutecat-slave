@@ -75,6 +75,8 @@ class CuteCatChannel(SlaveChannel):
         self.api_url = self.config['api_url']
         self.robot_wxid = self.config['robot_wxid']
         self.self_url = self.config['self_url']
+        self.receive_self_msg = self.config.get('receive_self_msg',False)
+        self.label_style = self.config.get('label_style',False)
         access_token = self.config.get('access_token',None)
         self.bot = CuteCat(api_url = self.api_url, self_url = self.self_url, robot_wxid = self.robot_wxid, access_token = access_token)
         ChatMgr.slave_channel = self
@@ -95,7 +97,7 @@ class CuteCatChannel(SlaveChannel):
                 ))
                 author = chat.other
                 self.handle_msg( msg = msg , author = author , chat = chat)
-            if not self.config.get('receive_self_msg',False):
+            if not self.receive_self_msg:
                 return
             if msg['final_from_wxid'] == self.robot_wxid and msg['type'] != 'sysmsg':
                 chat = ChatMgr.build_efb_chat_as_system_user(EFBPrivateChat(
@@ -127,9 +129,16 @@ class CuteCatChannel(SlaveChannel):
                         name=group_name or group_wxid
                 ))
             remark = self.get_friend_info('remark', userwxid)
+            
+            if self.label_style:
+                name = "#" + (remark or username) 
+                alias ="#" + ((group_nick_name if group_nick_name != remark else None) or (username if remark != None else None)) 
+            else:
+                name = (remark or username) 
+                alias = ((group_nick_name if group_nick_name != remark else None) or (username if remark != None else None))
             author = ChatMgr.build_efb_chat_as_member(chat, EFBGroupMember(
-                    name = remark or username ,
-                    alias = (group_nick_name if group_nick_name != remark else None) or (username if remark != None else None) ,
+                    name = name ,
+                    alias =alias ,
                     uid = userwxid
             ))
             self.handle_msg( msg = msg , author = author , chat = chat)
@@ -143,9 +152,13 @@ class CuteCatChannel(SlaveChannel):
             chat = None
             auther = None
             remark = self.get_friend_info('remark', wxid)
+            if self.label_style:
+                name = "#"+ (remark or name or wxid)
+            else:
+                name = remark or name or wxid
             chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
                     uid= wxid,
-                    name= remark or name or wxid,
+                    name= name,
             ))
             author = chat.other
             self.handle_msg( msg = msg , author = author , chat = chat)
@@ -329,7 +342,6 @@ class CuteCatChannel(SlaveChannel):
         interval = 3600
         self.update_friend_info()
         for k in self.group_member_info:
-            print(k)
             self.update_group_member_info(k)
         if t_event is not None and not t_event.is_set():
             self.cron_update_timer = threading.Timer(interval, self.cron_update_task, [t_event])
@@ -404,7 +416,7 @@ class CuteCatChannel(SlaveChannel):
                 self.bot.SendTextMsg( to_wxid=chat_uid , msg= msg.text)
         elif msg.type in [MsgType.Animation]:
             data = self.bot.SendEmojiMsg( to_wxid=chat_uid , msg = temp_msg)
-        if self.config.get('receive_self_msg',False):
+        if self.receive_self_msg:
             if msg.type in [MsgType.Video , MsgType.Animation , MsgType.Image , MsgType.Sticker , MsgType.File]:
                 content = {}
                 content['message'] = ("%s Send Success" % msg.type) if data.get('code') >= 0 else ("%s Send Failed" % msg.type)
