@@ -132,7 +132,9 @@ class CuteCatChannel(SlaveChannel):
             
             if self.label_style:
                 name = "#" + (remark or username) 
-                alias ="#" + ((group_nick_name if group_nick_name != remark else None) or (username if remark != None else None)) 
+                alias = ((group_nick_name if group_nick_name != remark else None) or (username if remark != None else None))
+                if alias != None:
+                    alias ="#" + alias
             else:
                 name = (remark or username) 
                 alias = ((group_nick_name if group_nick_name != remark else None) or (username if remark != None else None))
