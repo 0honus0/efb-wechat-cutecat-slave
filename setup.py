@@ -8,16 +8,16 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 __version__ = ""
-exec(open('efb_wechat_slave/__version__.py').read())
+exec(open('efb_wechat_cutecat_slave/__version__.py').read())
 
 
 setup(
-    name="efb-wechat-slave",
+    name="efb-wechat-cutecat-slave",
     version=__version__,
     description='EFB Slave for WeChat on CuteCat iHttp plugin',
     author='honus',
     author_email="undefined@example.com",
-    url="https://github.com/honus/efb-wechac-slave",
+    url="https://github.com/0honus0/efb-wechat-cutecat-slave",
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     python_requires='>=3.7',
     keywords=["wechat", ],
@@ -44,6 +44,6 @@ setup(
         "Operating System :: OS Independent"
     ],
     entry_points={
-        'ehforwarderbot.slave': 'honus.CuteCatiHttp = efb_wechat_slave:CuteCatChannel',
+        'ehforwarderbot.slave': 'honus.CuteCatiHttp = efb_wechat_cutecat_slave:CuteCatChannel',
     }
 )
