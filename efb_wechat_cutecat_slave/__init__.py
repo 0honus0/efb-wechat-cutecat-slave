@@ -505,7 +505,11 @@ class CuteCatChannel(SlaveChannel):
 
         for friend in self.info_list['friend']:
             nickname = friend['nickname']
-            remark = friend['remark']
+            #尝试支持可爱猫5.5.4
+            try:
+                remark = friend['remark']
+            except:
+                remark = friend['note']
             wxid = friend['wxid']
             self.info_dict['friend'][wxid] = {}
             self.info_dict['friend'][wxid]['nickname'] = nickname
