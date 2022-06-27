@@ -25,6 +25,7 @@
    receive_self_msg: True
    label_style: True
    robot_wxid: ""
+   real_wxid: ""
    access_token: ""
    ```
 
@@ -37,5 +38,7 @@ reveice_self_msg True为接收自己发送的消息，默认为False
 label_style True，在用户名前面添加#便于查找，默认为False
 
 robot_wxid 为作为机器人的微信id
+
+real_wxid 真实的微信id，此id为第一次修改wxid时候生成的真实id，区别于微信推出每年修改一次微信号的id
 
 access_token 鉴权使用，可在iHttp路径下配置文件中找到，如果开启则需要设置，否则不需要
