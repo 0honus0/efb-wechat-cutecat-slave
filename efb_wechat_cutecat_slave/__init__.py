@@ -554,6 +554,8 @@ class CuteCatChannel(SlaveChannel):
     def get_group_member_nameinfo(self , item : str ,  group_wxid : str , member_wxid : str ):
         if self.group_member_info.get(group_wxid) == None:
             self.update_group_member_info(group_wxid)
+        if self.group_member_info.get(group_wxid) == None:   '''update failed'''
+            return None
         if self.group_member_info[group_wxid].get(member_wxid , None) == None:
             return None
         return self.group_member_info[group_wxid][member_wxid][item] if self.group_member_info[group_wxid][member_wxid][item] else None
