@@ -74,7 +74,7 @@ class CuteCatChannel(SlaveChannel):
             raise EFBException("robot_wxid not found in config")
         self.api_url = self.config['api_url']
         self.robot_wxid = self.config['robot_wxid']
-        self.new_wxid = self.config['new_wxid']
+        self.real_wxid = self.config['real_wxid']
         self.self_url = self.config['self_url']
         self.receive_self_msg = self.config.get('receive_self_msg',False)
         self.label_style = self.config.get('label_style',False)
@@ -155,7 +155,7 @@ class CuteCatChannel(SlaveChannel):
             chat = None
             auther = None
             remark = self.get_friend_info('remark', wxid)
-            if (not self.receive_self_msg) and (msg['robot_wxid'] == self.robot_wxid and msg['from_wxid'] == self.new_wxid):
+            if (not self.receive_self_msg) and (msg['robot_wxid'] == self.robot_wxid and msg['from_wxid'] == self.real_wxid):
                 return
             if self.label_style:
                 name = "#"+ (remark or name or wxid)
