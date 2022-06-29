@@ -280,6 +280,7 @@ class CuteCatChannel(SlaveChannel):
             efb_msgs.append(TYPE_HANDLERS['text'](msg , chat))
 
         for efb_msg in efb_msgs:
+            efb_msg.uid = str(time.time())
             efb_msg.author = author
             efb_msg.chat = chat
             efb_msg.deliver_to = coordinator.master
