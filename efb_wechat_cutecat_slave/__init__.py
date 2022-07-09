@@ -2,7 +2,6 @@ import logging
 import threading
 from traceback import print_exc
 
-import yaml
 import re
 import time
 from ehforwarderbot.chat import PrivateChat , SystemChatMember
@@ -24,7 +23,7 @@ from .ChatMgr import ChatMgr
 from .CustomTypes import EFBGroupChat, EFBPrivateChat, EFBGroupMember
 from .MsgDecorator import efb_text_simple_wrapper
 from .WechatPcMsgProcessor import MsgProcessor
-from .utils import download_file , emoji_telegram2wechat , emoji_wechat2telegram
+from .utils import download_file , emoji_telegram2wechat , emoji_wechat2telegram , load_config
 
 TYPE_HANDLERS = {
     'text'              : MsgProcessor.text_msg,
@@ -41,7 +40,8 @@ TYPE_HANDLERS = {
     'transfer'          : MsgProcessor.transfer_msg,
     'groupannouncement' : MsgProcessor.group_announcement_msg,
     'eventnotify'       : MsgProcessor.event_notify_msg,
-    'miniprogram'       : MsgProcessor.miniprogram_msg
+    'miniprogram'       : MsgProcessor.miniprogram_msg,
+    'scancashmoney'     : MsgProcessor.scanmoney_msg,
 }
 
 class CuteCatChannel(SlaveChannel):
@@ -67,19 +67,20 @@ class CuteCatChannel(SlaveChannel):
 
     def __init__(self, instance_id: InstanceID = None):
         super().__init__(instance_id)
-        self.load_config()
+        config_path = efb_utils.get_config_path(self.channel_id)
+        self.config = load_config(config_path)
         if 'api_url' not in self.config:
             raise EFBException("api_url not found in config")
         if 'robot_wxid' not in self.config:
             raise EFBException("robot_wxid not found in config")
         self.api_url = self.config['api_url']
         self.robot_wxid = self.config['robot_wxid']
-        self.real_wxid = self.config['real_wxid']
         self.self_url = self.config['self_url']
         self.receive_self_msg = self.config.get('receive_self_msg',False)
         self.label_style = self.config.get('label_style',False)
-        access_token = self.config.get('access_token',None)
-        self.bot = CuteCat(api_url = self.api_url, self_url = self.self_url, robot_wxid = self.robot_wxid, access_token = access_token)
+        self.access_token = self.config.get('access_token',None)
+        self.real_wxid = self.config.get('real_wxid',False)
+        self.bot = CuteCat(api_url = self.api_url, self_url = self.self_url, robot_wxid = self.robot_wxid, access_token = self.access_token)
         ChatMgr.slave_channel = self
 
         @self.bot.on('EventSendOutMsg')
@@ -246,24 +247,41 @@ class CuteCatChannel(SlaveChannel):
         @self.bot.on('EventReceivedTransfer')
         def on_received_transfer(msg : Dict[str, Any]):
             self.logger.debug(msg)
+            content = {}
             name = msg['final_from_name']
             wxid = msg['final_from_wxid']
             chat = None
             auther = None
             remark = self.get_friend_info('remark', wxid)
-            chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
-                    uid= wxid,
-                    name= remark or name or wxid,
-            ))
-            author = chat.other
-            self.handle_msg( msg = msg , author = author , chat = chat)
+            # chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
+            #         uid= wxid,
+            #         name= remark or name or wxid,
+            # ))
+            #author = chat.other
+            text = (
+                f"收到 {name}({wxid}) 转账\n"
+                "金额为 :\n"
+                f"{msg['msg']['money']}"
+            )
+            content["message"] = text
+            commands = [
+                MessageCommand(
+                    name=("Accept"),
+                    callable_name="process_transfer",
+                    kwargs={'msg' : msg['msg']},
+                )
+            ]
+            content["commands"] = commands
+            uid = "process_transfer"
+            self.deliver_alert_to_master(content = content , uid = uid , name = name)
+            #self.handle_msg( msg = msg , author = author , chat = chat)
 
     #处理消息
     def handle_msg(self , msg : Dict[str, Any] , author : 'ChatMember' , chat : 'Chat'):
         efb_msgs = []
         if msg['type'] == 'share':
             # 判断分享的是文件类型
-            if '/WeChat/savefiles/' in msg['msg']:
+            if 'get_file' in msg['msg']:
                 efb_msgs.append(MsgProcessor.file_msg(msg))
             else:
                 efb_msgs = TYPE_HANDLERS[msg['type']](msg)
@@ -271,7 +289,7 @@ class CuteCatChannel(SlaveChannel):
                     return
                 else:
                     efb_msgs = tuple(efb_msgs)
-        elif msg['type'] in ['miniprogram', 'video', 'image', 'location' , 'qqmail', 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement' , 'eventnotify' , 'transfer']:
+        elif msg['type'] in ['miniprogram', 'video', 'image', 'location' , 'qqmail', 'animatedsticker' , 'other' , 'revokemsg' , 'groupannouncement' , 'eventnotify' , 'transfer' , 'scancashmoney']:
             efb_msg = TYPE_HANDLERS[msg['type']](msg)
             efb_msgs.append(efb_msg) if efb_msg else efb_msgs
         elif msg['type'] in ['voip' , 'card']:
@@ -303,6 +321,13 @@ class CuteCatChannel(SlaveChannel):
 
     def process_friend_request(self , msg : Dict[str, Any]):
         data = self.bot.AgreeFriendVerify( msg = msg ) or {}
+        if data.get('code') >=0:
+            return 'Success'
+        else:
+            return 'Failed'
+
+    def process_transfer(self , msg : Dict[str, Any]):
+        data = self.bot.AcceptTransfer( msg = msg ) or {}
         if data.get('code') >=0:
             return 'Success'
         else:
@@ -351,21 +376,6 @@ class CuteCatChannel(SlaveChannel):
         if t_event is not None and not t_event.is_set():
             self.cron_update_timer = threading.Timer(interval, self.cron_update_task, [t_event])
             self.cron_update_timer.start()
-
-    #从本地读取配置
-    def load_config(self):
-        """
-        Load configuration from path specified by the framework.
-        Configuration file is in YAML format.
-        """
-        config_path = efb_utils.get_config_path(self.channel_id)
-        if not config_path.exists():
-            return
-        with config_path.open() as f:
-            d = yaml.full_load(f)
-            if not d:
-                return
-            self.config: Dict[str, Any] = d
 
     #获取全部联系人
     def get_chats(self) -> Collection['Chat']:
@@ -561,6 +571,8 @@ class CuteCatChannel(SlaveChannel):
     def get_group_member_nameinfo(self , item : str ,  group_wxid : str , member_wxid : str ):
         if self.group_member_info.get(group_wxid) == None:
             self.update_group_member_info(group_wxid)
+        if self.group_member_info.get(group_wxid) == None:   #'''update failed'''
+            return None
         if self.group_member_info[group_wxid].get(member_wxid , None) == None:
             return None
         return self.group_member_info[group_wxid][member_wxid][item] if self.group_member_info[group_wxid][member_wxid][item] else None

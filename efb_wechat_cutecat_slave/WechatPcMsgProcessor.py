@@ -1,14 +1,19 @@
 import base64
 import tempfile
 import logging
-from .utils import download_file , wechatimagedecode
+from .utils import download_file , wechatimagedecode , load_config
 from .MsgDecorator import efb_text_simple_wrapper, efb_text_delete_wrapper, efb_image_wrapper, efb_video_wrapper, efb_share_link_wrapper, efb_location_wrapper, efb_file_wrapper , efb_unsupported_wrapper , efb_voice_wrapper , efb_qqmail_wrapper , efb_miniprogram_wrapper
 import re
 import pilk
 import pydub
 import json
 
+from ehforwarderbot import utils as efb_utils
+
 logger :logging.Logger = logging.getLogger(__name__)
+
+channel_id = "honus.CuteCatiHttp"
+access_token = load_config(efb_utils.get_config_path(channel_id)).get("access_token" , "")
 
 class MsgProcessor:
 
@@ -45,7 +50,7 @@ class MsgProcessor:
     def image_msg(msg: dict):
         url = msg['msg']
         try:
-            f = download_file(url)
+            f = download_file(url , access_token = access_token)
         except Exception as e:
             logger.warning(f"Failed to download the image! {e}")
             return efb_text_simple_wrapper("Image received and download failed. Please check it on your phone.")
@@ -56,7 +61,7 @@ class MsgProcessor:
     def video_msg(msg : dict):
         url = msg['msg']
         try:
-            f = download_file(url)
+            f = download_file(url , access_token = access_token)
         except Exception as e:
             logger.warning(f"Failed to download the video_msg! {e}")
             return efb_text_simple_wrapper("Video_msg received and download failed. Please check it on your phone.")
@@ -67,7 +72,7 @@ class MsgProcessor:
     def file_msg(msg : dict):
         url = msg['msg']
         try:
-            f = download_file(url)
+            f = download_file(url , access_token = access_token)
         except Exception as e:
             logger.warning(f"Failed to download the file! {e}")
             return efb_text_simple_wrapper("File received and download failed. Please check it on your phone.")
@@ -145,7 +150,7 @@ class MsgProcessor:
     @staticmethod
     def voice_msg( msg : dict , chat):
         try:
-            input_file = download_file(msg['msg'])
+            input_file = download_file(msg['msg'] , access_token = access_token)
         except Exception as e:
             logger.warning(f"Failed to download the voice! {e}")
             msg['msg'] = '语音消息\n  - - - - - - - - - - - - - - - \n不支持的消息类型, 请在微信端查看'
@@ -179,11 +184,15 @@ class MsgProcessor:
             msg['msg'] = f'「群成员增加」 \n  - - - - - - - - - - - - - - - \n{inviter} 邀请 {new} 加入了群聊'
         elif msg['event'] == 'EventGroupMemberDecrease':
             msg['msg'] = '「群成员减少」 \n  - - - - - - - - - - - - - - - \n "' + msg['msg']['member_nickname'] + '" 离开了群聊'
-        elif msg['event'] == 'EventScanCashMoney':
-            msg['msg'] = msg['msg']['scene_desc']
         return efb_text_simple_wrapper(msg['msg'])
 
     @staticmethod
     def transfer_msg( msg : dict ):
-        msg['msg'] = '「转账」 \n  - - - - - - - - - - - - - - - \n ' + json.loads(msg['money'])['money'] + ' 元'
+        msg['msg'] = '「转账」 \n  - - - - - - - - - - - - - - - \n ' + str(json.loads(msg['money'])) + ' 元'
         return efb_text_simple_wrapper(msg['msg'])
+
+    @staticmethod
+    def scanmoney_msg( msg : dict ):
+        msg['msg'] = msg['msg']['scene_desc']
+        return efb_text_simple_wrapper(msg['msg'])
+

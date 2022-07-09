@@ -4,24 +4,42 @@ import threading
 import requests as requests
 import re
 import json
+import yaml
 import emoji as Emoji
+from typing import Dict , Any
 
-def download_file(url: str, retry: int = 3) -> tempfile:
+#从本地读取配置
+def load_config(path : str) -> Dict[str, Any]:
+    """
+    Load configuration from path specified by the framework.
+    Configuration file is in YAML format.
+    """
+    if not path.exists():
+        return
+    with path.open() as f:
+        d = yaml.full_load(f)
+        if not d:
+            return
+        config: Dict[str, Any] = d
+    return config
+
+def download_file(url: str, retry: int = 3 , access_token : str = None) -> tempfile:
     """
     A function that downloads files from given URL
     Remember to close the file once you are done with the file!
     :param retry: The max retries before giving up
     :param url: The URL that points to the file
     """
+    headers = { "Authorization": access_token }
     count = 1
     while True:
         try:
             file = tempfile.NamedTemporaryFile()
-            r = requests.get(url, stream=True, timeout=10)
-            r.raise_for_status()  # Replace this with better error handling.
-
-            for chunk in r.iter_content(1024):
-                file.write(chunk)
+            r = requests.get(url, headers = headers, stream=True, timeout=10)
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    file.write(chunk)
+                    file.flush()
         except Exception as e:
             logging.getLogger(__name__).warning(f"Error occurred when downloading {url}. {e}")
             if count >= retry:
