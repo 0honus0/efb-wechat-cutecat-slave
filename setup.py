@@ -32,6 +32,7 @@ setup(
         "emoji",
         "pilk",
         "pydub",
+        "lottie",
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
