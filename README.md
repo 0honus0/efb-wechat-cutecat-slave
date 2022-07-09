@@ -1,6 +1,6 @@
 使用方法
 
-[详细教程 点击查看](https://honus.top/2022/04/09/569.html)
+[详细教程 点击查看](https://blog.honus.top/2022/04/09/569.html)
 
 1. 安装 python-CuteCat-iHttp 插件
 
