@@ -402,6 +402,47 @@ class CuteCatChannel(SlaveChannel):
             chat = ChatMgr.build_efb_chat_as_private(chat)
         return chat
 
+    # at获取群成员列表
+    def atlist(self, msg):
+        group_wxid = msg.chat.uid
+        member_list = self.get_group_members_list(group_wxid)
+        chat = msg.chat
+        try:
+            author = chat.get_member(SystemChatMember.SYSTEM_ID)
+        except KeyError:
+            author = chat.add_system_member()
+        # in case failure
+        if not member_list:
+            msg = Message(
+                text="Failed to get group member list...",
+                uid="{uni_id}".format(uni_id=str(int(time.time()))),
+                type=MsgType.Text,
+                chat=chat,
+                author=author,
+                deliver_to=coordinator.master,
+            )
+            coordinator.send_message(msg)
+            return
+        # compose text
+        text = ''
+        for i in member_list:
+            if i['group_nickname']:
+                text += "{group_nickname}({nickname}):\n" \
+                        "{wxid}\n".format(group_nickname=i['group_nickname'], nickname=i['nickname'], wxid=i['wxid'])
+            else:
+                text += "{nickname}:\n" \
+                        "{wxid}\n".format(nickname=i['nickname'], wxid=i['wxid'])
+        # send
+        msg = Message(
+            text=text,
+            uid="{uni_id}".format(uni_id=str(int(time.time()))),
+            type=MsgType.Text,
+            chat=chat,
+            author=author,
+            deliver_to=coordinator.master,
+        )
+        coordinator.send_message(msg)
+    
     #发送消息
     def send_message(self, msg : Message) -> Message:
         chat_uid = msg.chat.uid
@@ -416,8 +457,18 @@ class CuteCatChannel(SlaveChannel):
             pass
 
         if msg.type in [MsgType.Text , MsgType.Link]:
-            temp_msg=emoji_telegram2wechat(msg.text)
-            self.bot.SendTextMsg( to_wxid=chat_uid , msg=temp_msg)
+            temp_msg = emoji_telegram2wechat(msg.text)
+            if msg.text.startswith('@') and re.search("^[0-9]+@chatroom$", chat_uid):
+                at_member_wxid = msg.text[1:].split(' ')[0]
+                try:
+                    at_text = msg.text[1:].split(' ', 1)[1]
+                except IndexError:
+                    at_text = ''
+                self.bot.SendGroupMsgAndAt(group_wxid=chat_uid, member_wxid=at_member_wxid, msg=at_text)
+            elif msg.text == '/at' and re.search("^[0-9]+@chatroom$", chat_uid):
+                self.atlist(msg)
+            else:
+                self.bot.SendTextMsg(to_wxid=chat_uid, msg=temp_msg)
         elif msg.type in [MsgType.Sticker]:
             data = self.bot.SendImageMsg( to_wxid=chat_uid , msg = temp_msg)
         elif msg.type in [MsgType.Image]:
