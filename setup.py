@@ -29,7 +29,7 @@ setup(
         "requests",
         "python-magic",
         "lxml",
-        "emoji",
+        "emoji==1.7.0",
         "pilk",
         "pydub",
         "lottie",
