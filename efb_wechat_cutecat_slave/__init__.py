@@ -304,6 +304,7 @@ class CuteCatChannel(SlaveChannel):
         for efb_msg in efb_msgs:
             efb_msg.author = author
             efb_msg.chat = chat
+            efb_msg.uid = "{uni_id}".format(uni_id=str(int(time.time())))
             efb_msg.deliver_to = coordinator.master
             coordinator.send_message(efb_msg)
             if efb_msg.file:
