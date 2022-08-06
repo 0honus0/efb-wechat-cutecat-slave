@@ -1,6 +1,7 @@
-import logging
+import logging, tempfile
 import threading
 from traceback import print_exc
+from pydub import AudioSegment
 
 import re
 import time
@@ -450,7 +451,18 @@ class CuteCatChannel(SlaveChannel):
 
         if msg.edit:
             pass  # todo
-
+        
+        #将语音转成mp3，按文件下发。
+        if msg.type == MsgType.Voice:
+            print("received voice log is here")
+            print("msg.file.name="+msg.file.name)
+            f = tempfile.NamedTemporaryFile(suffix=".mp3")
+            AudioSegment.from_ogg(msg.file.name).export(f, format="mp3")
+            print("msg.file.new.name="+f.name)
+            msg.file = f
+            msg.file.name = f.name
+            msg.type = MsgType.Video
+            
         try:
             filename = msg.file.name.split('/')[-1] if msg.file else msg.file.name
             temp_msg = {'name' : filename , 'url': self.self_url + msg.file.name}
