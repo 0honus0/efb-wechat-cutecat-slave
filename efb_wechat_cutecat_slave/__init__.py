@@ -454,11 +454,10 @@ class CuteCatChannel(SlaveChannel):
         
         #将语音转成mp3，按文件下发。
         if msg.type == MsgType.Voice:
-            print("received voice log is here")
-            print("msg.file.name="+msg.file.name)
+            self.logger.debug("msg.file.name="+msg.file.name)
             f = tempfile.NamedTemporaryFile(suffix=".mp3")
             AudioSegment.from_ogg(msg.file.name).export(f, format="mp3")
-            print("msg.file.new.name="+f.name)
+            self.logger.debug("msg.file.new.name="+f.name)
             msg.file = f
             msg.file.name = f.name
             msg.type = MsgType.Video
