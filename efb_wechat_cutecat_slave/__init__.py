@@ -82,6 +82,7 @@ class CuteCatChannel(SlaveChannel):
         self.label_style = self.config.get('label_style',False)
         self.access_token = self.config.get('access_token',None)
         self.real_wxid = self.config.get('real_wxid',False)
+        self.sendtoself = self.config.get('sendtoself',True)
         self.bot = CuteCat(api_url = self.api_url, self_url = self.self_url, robot_wxid = self.robot_wxid, access_token = self.access_token)
         ChatMgr.slave_channel = self
 
@@ -104,11 +105,21 @@ class CuteCatChannel(SlaveChannel):
             if not self.receive_self_msg:
                 return
             if msg['final_from_wxid'] == self.robot_wxid and msg['type'] != 'sysmsg':
-                chat = ChatMgr.build_efb_chat_as_system_user(EFBPrivateChat(
-                    uid= self.robot_wxid,
-                    name= 'WeChat_Robot'
-                ))
-                author = chat.other
+                if self.sendtoself:
+                    chat = ChatMgr.build_efb_chat_as_system_user(EFBPrivateChat(
+                        uid= self.robot_wxid,
+                        name= 'WeChat_Robot'
+                    ))
+                    author = chat.other
+                else:
+                    to_wxid = msg['to_wxid']
+                    name = self.get_friend_info('nickname' , to_wxid)
+                    remark = self.get_friend_info('remark' , to_wxid)
+                    chat = ChatMgr.build_efb_chat_as_system_user(EFBPrivateChat(
+                        uid= to_wxid,
+                        name= remark or name
+                    ))
+                    author = chat.self
                 self.handle_msg( msg = msg , author = author , chat = chat)
 
         @self.bot.on('EventGroupMsg')

@@ -42,3 +42,5 @@ robot_wxid 为作为机器人的微信id
 real_wxid 真实的微信id，此id为第一次修改wxid时候生成的真实id，区别于微信推出每年修改一次微信号的id
 
 access_token 鉴权使用，可在iHttp路径下配置文件中找到，如果开启则需要设置，否则不需要
+
+sendtoself 外发消息默认在telegram中会以自己的wxid来发送，改为false，会发送到实际的会话中,可以配合https://github.com/QQ-War/efb_message_merge 使用
