@@ -115,10 +115,16 @@ class CuteCatChannel(SlaveChannel):
                     to_wxid = msg['to_wxid']
                     name = self.get_friend_info('nickname' , to_wxid)
                     remark = self.get_friend_info('remark' , to_wxid)
-                    chat = ChatMgr.build_efb_chat_as_system_user(EFBPrivateChat(
-                        uid= to_wxid,
-                        name= remark or name
-                    ))
+                    if "@chatroom" in to_wxid:
+                        chat = ChatMgr.build_efb_chat_as_group(EFBPrivateChat(
+                            uid= to_wxid,
+                            name= remark or name or to_wxid
+                        ))
+                    else:
+                        chat = ChatMgr.build_efb_chat_as_private(EFBPrivateChat(
+                            uid= to_wxid,
+                            name= remark or name or to_wxid
+                        ))
                     author = chat.self
                 self.handle_msg( msg = msg , author = author , chat = chat)
 
