@@ -211,7 +211,10 @@ def efb_share_link_wrapper(text: str) -> Tuple[Message]:
             )
             efb_msgs.append(efb_msg)
         elif type == 5: # xml链接
-            showtype = int(xml.xpath('/msg/appmsg/showtype/text()')[0])
+            if len(xml.xpath('/msg/appmsg/showtype/text()'))!=0:
+                showtype = int(xml.xpath('/msg/appmsg/showtype/text()')[0])
+            else:
+                showtype = 0
             if showtype == 0: # 消息对话中的(测试的是从公众号转发给好友, 不排除其他情况)
                 title = url = des = thumburl = None # 初始化
                 try:
