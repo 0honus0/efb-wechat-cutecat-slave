@@ -7,6 +7,7 @@ import re
 import pilk
 import pydub
 import json
+from lxml import etree
 
 from ehforwarderbot import utils as efb_utils
 
@@ -126,6 +127,12 @@ class MsgProcessor:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n分享成功消息'
         elif 'ChatSync' in msg['msg']:
             msg['msg'] = '  - - - - - - - - - - - - - - - \n系统消息 : 消息同步'
+        elif '邀请你加入了群聊，并分享了$history$' in msg['msg']:
+            xml = etree.fromstring(msg['msg'])
+            inviter = xml.xpath("//link[@name='username']/memberlist/member/nickname/text()")[0]
+            others = xml.xpath("//link[@name='others']/plain/text()")[0]
+            history = xml.xpath("//link[@name='history']/title/text()")[0]
+            msg['msg'] = f'{inviter}邀请你加入了群聊，并分享了{history}，群聊参与人还有：{others}'
         return efb_text_simple_wrapper(msg['msg'])
 
     @staticmethod
