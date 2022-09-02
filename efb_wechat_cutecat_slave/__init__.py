@@ -185,6 +185,8 @@ class CuteCatChannel(SlaveChannel):
                     uid= wxid,
                     name= name,
             ))
+            if wxid.startswith('gh_'):
+                chat.vendor_specific = {'is_mp' : True}
             author = chat.other
             self.handle_msg( msg = msg , author = author , chat = chat)
 
